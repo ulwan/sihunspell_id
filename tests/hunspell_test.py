@@ -140,6 +140,14 @@ class HunspellTest(unittest.TestCase):
         self.assertEqual(self.h.stem('dog'), ('dog',))
         self.assertEqual(self.h.stem('permanently'), ('permanent',))
 
+    def test_add(self):
+        word = 'outofvocabularyword'
+        self.assertEqual(self.h.spell(word), False)
+        self.h.add(word)
+        self.assertEqual(self.h.spell(word), True)
+        typo = word + 'd'
+        self.assertAllIn([word], self.h.suggest(typo))
+
     def test_bulk_suggest(self):
         self.h.set_concurrency(3)
         suggest = self.h.bulk_suggest(['dog', 'dpg'])

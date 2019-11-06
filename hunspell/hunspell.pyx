@@ -222,15 +222,22 @@ cdef class HunspellWrap(object):
         # Python individual word suggestions
         return self.action('suggest', word)
 
+    def add(self, basestring word):
+        # Python add individual word to dictionary
+        return self.action('add', word)
+
     def stem(self, basestring word):
         # Python individual word stemming
         return self.action('stem', word)
 
     def action(self, basestring action, basestring word):
-        cdef bint stem_action = (action == 'stem')
-        cache = self._stem_cache if stem_action else self._suggest_cache
-        if word in cache:
-            return cache[word]
+        if action == 'stem':
+            if word in self._stem_cache:
+                return self._stem_cache[word]
+        elif action == 'suggest':
+            if word in self._suggest_cache:
+                return self._suggest_cache[word]
+
 
         cdef char **s_list = NULL
         cdef char *c_word = NULL
@@ -239,8 +246,10 @@ cdef class HunspellWrap(object):
         copy_to_c_string(word, &c_word, self._dic_encoding)
 
         try:
-            if stem_action:
+            if action == 'stem':
                 count = self._cxx_hunspell.stem(&s_list, c_word)
+            elif action == 'add':
+                return self._cxx_hunspell.add(c_word)
             else:
                 count = self._cxx_hunspell.suggest(&s_list, c_word)
 
@@ -250,7 +259,12 @@ cdef class HunspellWrap(object):
             self._cxx_hunspell.free_list(&s_list, count)
 
             stem_result = tuple(stem_list)
-            cache[word] = stem_result
+
+            if action == 'stem':
+                self._stem_cache[word] = stem_result
+            elif action == 'suggest':
+                self._suggest_cache[word] = stem_result
+
             return stem_result
         finally:
             if c_word is not NULL:
