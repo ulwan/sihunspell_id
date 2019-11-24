@@ -20,6 +20,7 @@ To release, run through the following:
     git commit -am "Updated version for release <next version>"
     git tag <next version>
     python setup.py sdist
+    pip install dist/*
     # Check the tar version matches expected release version
     git push
     git push --tags
