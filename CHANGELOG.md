@@ -1,3 +1,6 @@
+# 1.3.3
+- Mapped the `add` function to the cython wrapper class.
+
 # 1.3.1 -> 1.3.2
 - Fixed dictionary loader to respect locales
 - Enabled long file paths to be loaded on windows

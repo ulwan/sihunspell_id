@@ -1,24 +1,34 @@
+# Releasing
+
+## Tracking Changes
+
 Update the CHANGELOG.md with any significant changes for the release.
+
+Update VERSION file with the next version bump
+
+## Rebuilding Extensions
 
 Then ensure that you've built the extension for the release.
 
-    python --version # Should be 3.6.x -- change if not in 3.6
+    python --version # Use >= 3.6.x
     pip install -r requirements-dev.txt
     python setup.py build_ext
     python setup.py test # Should pass with changes
+
+## Commiting Changes
 
 You should now see a new hunspell.cpp in the hunspell directory.
 
    git add hunspell/hunspell.cpp
    git commit -m "Compiled new hunspell.cpp for release"
 
+
+## Push release
+
 To release, run through the following:
 
     rm -rf dist
-    # Update VERSION file with <next version>
-    # Update CHANGELOG.md
-    git commit -am "Updated version for release <next version>"
-    git tag <next version>
+    git tag `cat VERSION`
     python setup.py sdist
     pip install dist/*
     # Check the tar version matches expected release version
