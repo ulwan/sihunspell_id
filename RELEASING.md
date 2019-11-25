@@ -6,6 +6,8 @@ Update the CHANGELOG.md with any significant changes for the release.
 
 Update VERSION file with the next version bump
 
+    git commit -am "Updated version to `cat VERSION`"
+
 ## Rebuilding Extensions
 
 Then ensure that you've built the extension for the release.
@@ -13,6 +15,8 @@ Then ensure that you've built the extension for the release.
     python --version # Use >= 3.6.x
     pip install -r requirements-dev.txt
     python setup.py build_ext
+    # Remove the any accidentally added so files
+    rm -rf hunspell/*.so
     python setup.py test # Should pass with changes
 
 ## Commiting Changes

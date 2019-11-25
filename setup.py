@@ -36,7 +36,7 @@ linetrace = '--linetrace' in sys.argv or '-l' in sys.argv
 building = 'build_ext' in sys.argv
 force_rebuild = '--force' in sys.argv or '-f' in sys.argv and building
 
-datatypes = ['*.aff', '*.dic', '*.pxd', '*.pyx', '*.pyd', '*.pxd', '*.so', '*.lib', '*hpp']
+datatypes = ['*.aff', '*.dic', '*.pxd', '*.pyx', '*.pyd', '*.pxd', '*.so', '*.lib', '*.hpp', '*.cpp']
 packages = find_packages(exclude=['*.tests', '*.tests.*', 'tests.*', 'tests'])
 packages.extend(['dictionaries', 'libs.msvc'])
 required = [req.strip() for req in read('requirements.txt').splitlines() if req.strip()]
@@ -54,7 +54,7 @@ if building:
     ext_modules = cythonize([
         Extension(
             'hunspell.hunspell',
-            [os.path.join(BASE_DIR, 'hunspell', 'hunspell.pyx')],
+            [os.path.join('hunspell', 'hunspell.pyx')],
             **hunspell_config
         )
     ], force=force_rebuild)
@@ -63,7 +63,7 @@ else:
     ext_modules = [
         Extension(
             'hunspell.hunspell',
-            [os.path.join(BASE_DIR, 'hunspell', 'hunspell.cpp')],
+            [os.path.join('hunspell', 'hunspell.cpp')],
             **hunspell_config
         )
     ]
