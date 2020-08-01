@@ -79,18 +79,11 @@ def is_header(filepath):
 def include_dirs(*packages):
     dirs = []
     if 'hunspell' in packages:
-        if platform.system() == 'Linux':
-            dirs = [
-                os.path.abspath(os.path.join(BASE_DIR, 'hunspell')),
-                # Download path if missing
-                os.path.abspath(os.path.join(BASE_DIR, 'external', 'hunspell-1.6.2', 'src')),
-            ]
-        else:
-            dirs = [
-                os.path.abspath(os.path.join(BASE_DIR, 'hunspell')),
-                # Download path if missing
-                os.path.abspath(os.path.join(BASE_DIR, 'external', 'hunspell-1.3.3', 'src')),
-            ]
+        dirs = [
+            os.path.abspath(os.path.join(BASE_DIR, 'hunspell')),
+            # Download path if missing
+            os.path.abspath(os.path.join(BASE_DIR, 'external', 'hunspell-1.7.0', 'src')),
+        ]
     if platform.system() != 'Windows':
         dirs.extend([
             '/usr/local/include',
@@ -183,7 +176,7 @@ def build_hunspell_package(directory, force_build=False):
         os.makedirs(tmp_lib_path)
 
     olddir = os.getcwd()
-    if force_build or not os.path.exists(os.path.join(tmp_lib_path, 'lib', 'libhunspell-1.6.so.0.0.1')):
+    if force_build or not os.path.exists(os.path.join(tmp_lib_path, 'lib', 'libhunspell-1.7.so.0.0.1')):
         try:
             os.chdir(directory)
             check_call(['autoreconf', '-vfi'])
@@ -199,10 +192,10 @@ def build_hunspell_package(directory, force_build=False):
     os.makedirs(lib_path)
 
     shutil.copyfile(
-        os.path.join(tmp_lib_path, 'lib', 'libhunspell-1.6.so.0.0.1'),
-        os.path.join(lib_path, 'libhunspell-1.6.so.0'))
+        os.path.join(tmp_lib_path, 'lib', 'libhunspell-1.7.so.0.0.1'),
+        os.path.join(lib_path, 'libhunspell-1.7.so.0'))
     os.symlink(
-        os.path.join(lib_path, 'libhunspell-1.6.so.0'),
+        os.path.join(lib_path, 'libhunspell-1.7.so.0'),
         os.path.join(lib_path, 'libhunspell.so'))
     shutil.rmtree(tmp_lib_path)
 
@@ -243,26 +236,16 @@ def pkgconfig(*packages, **kw):
         if 'hunspell' in packages and not package_found('hunspell', kw['include_dirs']):
             # Prepare for hunspell if it's missing
             if not os.environ.get('SKIP_DOWNLOAD', False):
-                if platform.system() == 'Linux':
-                    download_and_extract('https://github.com/hunspell/hunspell/archive/v1.6.2.tar.gz',
-                        os.path.join(BASE_DIR, 'external'))
-                else:
-                    download_and_extract('http://downloads.sourceforge.net/hunspell/hunspell-1.3.3.tar.gz',
-                        os.path.join(BASE_DIR, 'external'))
+                download_and_extract('https://github.com/hunspell/hunspell/archive/v1.7.0.tar.gz',
+                    os.path.join(BASE_DIR, 'external'))
                 kw['include_dirs'] = include_dirs(*packages)
             else:
                 raise RuntimeError("Could not find hunspell and not allowed to download")
 
         for pkg in packages:
             if not append_links(pkg, kw):
-                if pkg == 'hunspell' and platform.system() == 'Linux':
-                    lib_path = build_hunspell_package(os.path.join(BASE_DIR, 'external', 'hunspell-1.6.2'))
-                    if not append_links(pkg, kw):
-                        raise RuntimeError("Couldn't find lib dependency after building: {}".format(pkg))
-                    else:
-                        kw['extra_link_args'] += ['-Wl,-rpath,"{}"'.format(lib_path)]
-                elif pkg == 'hunspell' and platform.system() != 'Windows':
-                    lib_path = build_hunspell_package(os.path.join(BASE_DIR, 'external', 'hunspell-1.3.3'))
+                if pkg == 'hunspell':
+                    lib_path = build_hunspell_package(os.path.join(BASE_DIR, 'external', 'hunspell-1.7.0'))
                     if not append_links(pkg, kw):
                         raise RuntimeError("Couldn't find lib dependency after building: {}".format(pkg))
                     else:
