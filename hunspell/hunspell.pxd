@@ -25,6 +25,16 @@ cdef extern from "hunspell/hunspell.hxx":
 
         int suggest(char*** slst, const char * word) nogil
 
+        # Suggest words from suffix rules
+        # suffix_suggest(suggestions, root_word)
+        # input: pointer to an array of strings pointer and the  word
+        #   array of strings pointer (here *slst) may not be initialized
+        # output: number of suggestions in string array, and suggestions in
+        #   a newly allocated array of strings (*slts will be NULL when number
+        #   of suggestion equals 0.)
+        #
+        int suffix_suggest(char*** slst, const char* root_word) nogil
+
         # deallocate suggestion lists
 
         void free_list(char *** slst, int n) nogil

@@ -117,6 +117,23 @@ def test_suggest_empty(hunspell):
     assert hunspell.suggest('') == ()
 
 
+def test_suffix_suggest(hunspell):
+    required = set(['doing', 'doth', 'doer', 'doings', 'doers', 'doest'])
+    suffix_suggest = hunspell.suffix_suggest('do')
+    assert isinstance(suffix_suggest, tuple)
+    assert required == set(suffix_suggest).intersection(required)
+
+
+def test_suffix_suggest_utf8(hunspell):
+    suffix_suggest = hunspell.suffix_suggest('café')
+    assert isinstance(suffix_suggest, tuple)
+    assert set(['cafés', "café's"]) == set(suffix_suggest)
+
+
+def test_suffix_suggest_empty(hunspell):
+    assert hunspell.suffix_suggest('') == ()
+
+
 def test_stem(hunspell):
     assert hunspell.stem('dog') == ('dog',)
     assert hunspell.stem('permanently') == ('permanent',)
@@ -163,10 +180,13 @@ def test_bulk_stem(hunspell):
 
 def test_non_overlapping_caches(hunspell):
     test_suggest = hunspell.suggest('testing')
+    test_suffix = hunspell.suffix_suggest('testing')
     test_stem = hunspell.stem('testing')
 
     hunspell._suggest_cache['made-up'] = test_suggest
     assert hunspell.suggest('made-up') == test_suggest
+    hunspell._suffix_cache['made-up'] = test_suffix
+    assert hunspell.suffix_suggest('made-up') == test_suffix
     hunspell._stem_cache['made-up'] = test_stem
     assert hunspell.stem('made-up') == test_stem
 
@@ -177,16 +197,20 @@ def test_non_overlapping_caches(hunspell):
 
 def test_overlapping_caches(hunspell):
     test_suggest = hunspell.suggest('testing')
+    test_suffix = hunspell.suffix_suggest('testing')
     test_stem = hunspell.stem('testing')
 
     hunspell._suggest_cache['made-up'] = test_suggest
     assert hunspell.suggest('made-up') == test_suggest
+    hunspell._suffix_cache['made-up'] = test_suffix
+    assert hunspell.suffix_suggest('made-up') == test_suffix
     hunspell._stem_cache['made-up'] = test_stem
     assert hunspell.stem('made-up') == test_stem
 
     del hunspell
     hunspell = Hunspell('test', hunspell_data_dir=DICT_DIR)
     assert hunspell.suggest('made-up') == test_suggest
+    assert hunspell.suffix_suggest('made-up') == test_suffix
     assert hunspell.stem('made-up') == test_stem
 
 
@@ -198,10 +222,13 @@ def test_save_caches_persistance(hunspell):
             disk_cache_dir=temp_dir,
             cache_manager='disk_hun')
         test_suggest = h1.suggest('testing')
+        test_suffix = h1.suffix_suggest('testing')
         test_stem = h1.stem('testing')
 
         h1._suggest_cache['made-up'] = test_suggest
         assert h1.suggest('made-up') == test_suggest
+        h1._suffix_cache['made-up'] = test_suffix
+        assert h1.suffix_suggest('made-up') == test_suffix
         h1._stem_cache['made-up'] = test_stem
         assert h1.stem('made-up') == test_stem
 
@@ -220,6 +247,7 @@ def test_save_caches_persistance(hunspell):
         assert len(h2._suggest_cache) != 0
         assert len(h2._stem_cache) != 0
         assert h2.suggest('made-up') == test_suggest
+        assert h2.suffix_suggest('made-up') == test_suffix
         assert h2.stem('made-up') == test_stem
     finally:
         shutil.rmtree(temp_dir) # Nuke temp content
@@ -233,10 +261,13 @@ def test_clear_caches_persistance(hunspell):
             disk_cache_dir=temp_dir,
             cache_manager='disk_hun')
         test_suggest = h1.suggest('testing')
+        test_suffix = h1.suffix_suggest('testing')
         test_stem = h1.stem('testing')
 
         h1._suggest_cache['made-up'] = test_suggest
         assert h1.suggest('made-up') == test_suggest
+        h1._suffix_cache['made-up'] = test_suffix
+        assert h1.suffix_suggest('made-up') == test_suffix
         h1._stem_cache['made-up'] = test_stem
         assert h1.stem('made-up') == test_stem
 
@@ -256,6 +287,7 @@ def test_clear_caches_persistance(hunspell):
         assert len(h2._suggest_cache) == 0
         assert len(h2._stem_cache) == 0
         assert h2.suggest('made-up') != test_suggest
+        assert h2.suffix_suggest('made-up') != test_suffix
         assert h2.stem('made-up') != test_stem
     finally:
         shutil.rmtree(temp_dir) # Nuke temp content
@@ -263,10 +295,13 @@ def test_clear_caches_persistance(hunspell):
 
 def test_clear_caches_non_peristance(hunspell):
     test_suggest = hunspell.suggest('testing')
+    test_suffix = hunspell.suffix_suggest('testing')
     test_stem = hunspell.stem('testing')
 
     hunspell._suggest_cache['made-up'] = test_suggest
     assert hunspell.suggest('made-up') == test_suggest
+    hunspell._suffix_cache['made-up'] = test_suffix
+    assert hunspell.suffix_suggest('made-up') == test_suffix
     hunspell._stem_cache['made-up'] = test_stem
     assert hunspell.stem('made-up') == test_stem
 
@@ -275,4 +310,5 @@ def test_clear_caches_non_peristance(hunspell):
     del hunspell
     hunspell = Hunspell('test', hunspell_data_dir=DICT_DIR)
     assert hunspell.suggest('made-up') != test_suggest
+    assert hunspell.suffix_suggest('made-up') != test_suffix
     assert hunspell.stem('made-up') != test_stem
