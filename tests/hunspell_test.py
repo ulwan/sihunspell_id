@@ -58,24 +58,6 @@ def hunspell():
     return Hunspell('test', hunspell_data_dir=DICT_DIR)
 
 
-# class HunspellTest(unittest.TestCase):
-#     def assertRegexpSearch(self, *args, **kwargs):
-#         self.assertRegex(*args, **kwargs)
-
-#     def setUp(hunspell):
-#         hunspell = Hunspell('test', hunspell_data_dir=DICT_DIR)
-
-#     def tearDown(hunspell):
-#         try:
-#             del hunspell
-#         except AttributeError:
-#             pass
-
-#     def assertAllIn(self, checked, expected):
-#         self.assertTrue(all(x in expected for x in checked),
-#             u"{} not all found in {}".format(checked, expected))
-
-
 def test_create_destroy(hunspell):
     del hunspell
 

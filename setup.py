@@ -38,7 +38,7 @@ force_rebuild = '--force' in sys.argv or '-f' in sys.argv and building
 
 datatypes = ['*.aff', '*.dic', '*.pxd', '*.pyx', '*.pyd', '*.pxd', '*.so', '*.lib', '*.hpp', '*.cpp']
 packages = find_packages(exclude=['*.tests', '*.tests.*', 'tests.*', 'tests'])
-packages.extend(['dictionaries', 'libs.msvc'])
+packages.extend(['dictionaries'])
 required = [req.strip() for req in read('requirements.txt').splitlines() if req.strip()]
 required_dev = [req.strip() for req in read('requirements-dev.txt').splitlines() if req.strip()]
 required_test = [req.strip() for req in read('requirements-test.txt').splitlines() if req.strip()]
