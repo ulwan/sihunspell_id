@@ -261,6 +261,23 @@ cdef class HunspellWrap(object):
         else:
             raise ValueError(f"Unexpected action {action_to_string(action_e)} for caching")
 
+    def add_dic(self, basestring dpath, basestring key=None):
+        # Python load extra dictionaries
+        cdef char *c_path = NULL
+        cdef char *c_key = NULL
+        copy_to_c_string(dpath, &c_path, 'UTF-8')
+        try:
+            if key:
+                copy_to_c_string(key, &c_key, 'UTF-8')
+            try:
+                return self._cxx_hunspell.add_dic(c_path, c_key)
+            finally:
+                if c_key is not NULL:
+                    free(c_key)
+        finally:
+            if c_path is not NULL:
+                free(c_path)
+
     def add(self, basestring word):
         # Python add individual word to dictionary
         cdef char *c_word = NULL

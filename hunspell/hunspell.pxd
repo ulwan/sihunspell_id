@@ -3,7 +3,7 @@ cdef extern from "hunspell/hunspell.hxx":
         Hunspell(const char *affpath, const char *dpath, const char *key = NULL) nogil
 
         # load extra dictionaries (only dic files)
-        int add_dic(const char * dpath, const char * key = NULL) nogil
+        int add_dic(const char * dpath, const char * key) nogil
 
         # spell(word) - spellcheck word
         # output: 0 = bad word, not 0 = good word

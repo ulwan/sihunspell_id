@@ -67,6 +67,12 @@ def test_missing_dict():
         Hunspell('not_avail', hunspell_data_dir=DICT_DIR)
 
 
+def test_add_dic(hunspell):
+    assert not hunspell.spell('AA')
+    hunspell.add_dic(os.path.join(DICT_DIR, 'a.dic'))
+    assert hunspell.spell('AA')
+
+
 @patch('os.path.isfile', return_value=True)
 @patch('os.access', return_value=True)
 def test_bad_path_encoding(isfile_mock, access_mock):

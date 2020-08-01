@@ -2,6 +2,7 @@
 - Removed support for python 2
 - Updated to hunspell 1.7.0
 - Added support for `suffix_suggest`
+- Added support for `add_dic`
 
 # 1.3.3
 - Mapped the `add` function to the cython wrapper class.
