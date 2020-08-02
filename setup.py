@@ -8,7 +8,7 @@ from collections import defaultdict
 BASE_DIR = os.path.abspath(os.path.dirname(__file__))
 BUILD_ARGS = defaultdict(lambda: ['-O3', '-g0'])
 for compiler, args in [
-        ('msvc', ['/EHsc', '/DHUNSPELL_STATIC']),
+        ('msvc', ['/EHsc', '/MT', '/DHUNSPELL_STATIC']),
         ('gcc', ['-O3', '-g0', '-DHUNSPELL_STATIC'])]:
     BUILD_ARGS[compiler] = args
 

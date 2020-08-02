@@ -1,6 +1,6 @@
 #
 # This is a cross-platform shared library search mechanism. Tested on:
-# OSX, Ubuntu, Fedora, and Windows XP+
+# OSX, Ubuntu, Fedora, and Windows
 #
 import os
 import glob
@@ -8,7 +8,7 @@ import platform
 import re
 import sys
 import shutil
-from subprocess import run, PIPE, STDOUT
+from subprocess import Popen, PIPE
 from tar_download import download_and_extract
 from distutils.sysconfig import get_python_lib
 try:
@@ -119,6 +119,16 @@ def package_found(package, include_dirs):
             return True
     return False
 
+def run_proc_delay_print(*args):
+    proc = Popen(args, stdout=PIPE, stderr=PIPE)
+    stdout, stderr = proc.communicate()
+    for line in stdout.decode(encoding='utf-8').split('\n'):
+        print(line)
+    for line in stderr.decode(encoding='utf-8').split('\n'):
+        print(line, file=sys.stderr)
+    if proc.returncode != 0:
+        raise RuntimeError(f"Process '{args}' returned with a non-zero exit code")
+
 def build_hunspell_package(directory, force_build=False):
     if platform.system() == 'Windows':
         raise RuntimeError("Cannot build directly for windows OS. Please build manually by follow instructions at /libs/msvc/README")
@@ -131,34 +141,29 @@ def build_hunspell_package(directory, force_build=False):
     expected_lib_name = 'libhunspell-1.7.so.0.0.1'
 
     olddir = os.getcwd()
-    if force_build or not os.path.exists(os.path.join(lib_path, expected_lib_name)):
+    if force_build or not os.contentspath.exists(os.path.join(lib_path, expected_lib_name)):
+        if os.path.exists(lib_path):
+            shutil.rmtree(lib_path)
         try:
             os.chdir(directory)
-            run(['autoreconf', '-vfi'], check=True, stdout=PIPE, stderr=STDOUT)
-            run(['./configure', '--prefix='+tmp_lib_path], check=True, stdout=PIPE, stderr=STDOUT)
-            run('make', check=True, stdout=PIPE, stderr=STDOUT)
-            run(['make', 'install'], check=True, stdout=PIPE, stderr=STDOUT)
+            run_proc_delay_print('autoreconf', '-vfi')
+            run_proc_delay_print('./configure', '--prefix='+tmp_lib_path)
+            run_proc_delay_print('make')
+            run_proc_delay_print('make', 'install')
         finally:
             os.chdir(olddir)
 
-    shutil.copyfile(
-        os.path.join(lib_path, expected_lib_name),
-        os.path.join(lib_path, 'libhunspell-1.7.so.0'))
-    os.symlink(
-        os.path.join(lib_path, 'libhunspell-1.7.so.0'),
-        os.path.join(lib_path, 'libhunspell.so'))
+        print("Built Hunspell library files:")
+        for filename in os.listdir(lib_path):
+            if os.path.isfile(os.path.join(lib_path, filename)):
+                print('\t' + filename)
+        if not os.path.exists(os.path.join(lib_path, 'libhunspell.so')):
+            print(f"Linking '{os.path.join(lib_path, expected_lib_name)}' to '{os.path.join(lib_path, 'libhunspell.so')}'")
+            os.symlink(
+                os.path.join(lib_path, expected_lib_name),
+                os.path.join(lib_path, 'libhunspell.so'))
 
     return lib_path
-
-def append_links(**kw):
-    linker_name, linker_path = get_library_linker_name()
-    if linker_name:
-        kw['libraries'].append(linker_name)
-    if linker_path:
-        kw['library_dirs'].append(linker_path)
-    if linker_path and platform.system() != 'Windows':
-        kw['runtime_library_dirs'].append(linker_path)
-    return linker_name
 
 def pkgconfig(**kw):
     try:
@@ -188,11 +193,17 @@ def pkgconfig(**kw):
                 os.path.join(BASE_DIR, 'external'))
             kw['include_dirs'] = include_dirs()
 
-        if not append_links(**kw):
-            lib_path = build_hunspell_package(os.path.join(BASE_DIR, 'external', 'hunspell-1.7.0'))
-            if not append_links(**kw):
-                raise RuntimeError("Couldn't find lib dependency after building: hunspell")
+        if platform.system() == 'Windows':
+            linker_name, linker_path = get_library_linker_name()
+            if linker_name:
+                kw['libraries'].append(linker_name)
             else:
-                kw['extra_link_args'] += ['-Wl,-rpath,"{}"'.format(lib_path)]
+                raise RuntimeError("Could not find library dependencies for Windows")
+            if linker_path:
+                kw['library_dirs'].append(linker_path)
+        else:
+            kw['library_dirs'] = build_hunspell_package(os.path.join(BASE_DIR, 'external', 'hunspell-1.7.0'), True)
+            kw['libraries'] = 'libhunspell.so'
+            kw['extra_link_args'] += ['-Wl']
     
     return kw
