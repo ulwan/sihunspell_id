@@ -63,7 +63,6 @@ before_install:
           pip install -U pip
           python --version
           ;;
-      case $TRAVIS_OS_NAME in
         osx)
           brew update
           brew install autoconf automake libtool gettext
@@ -75,7 +74,6 @@ before_install:
           pip install -U pip
           python --version
           ;;
-      case $TRAVIS_OS_NAME in
         windows)
           [[ ! -f C:/tools/msys64/msys2_shell.cmd ]] && rm -rf C:/tools/msys64
           choco uninstall -y mingw
