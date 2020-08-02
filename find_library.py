@@ -195,13 +195,12 @@ def pkgconfig(**kw):
             kw['include_dirs'] = include_dirs()
 
         if platform.system() == 'Windows':
-            linker_name, linker_path = get_library_linker_name()
-            if linker_name:
-                kw['libraries'].append(linker_name)
-            else:
+            _linker_name, linker_path = get_library_linker_name()
+            if not linker_path:
                 raise RuntimeError("Could not find library dependencies for Windows")
-            if linker_path:
-                kw['library_dirs'].append(linker_path)
+            # These should be hardcoded to both architectures
+            kw['libraries'] = ['libhunspell-msvc14-x64', 'libhunspell-msvc14-x86']
+            kw['library_dirs'] = [linker_path]
             kw['extra_link_args'] = ['/NODEFAULTLIB:libucrt.lib ucrt.lib']
         else:
             lib_name, lib_path = build_hunspell_package(os.path.join(BASE_DIR, 'external', 'hunspell-1.7.0'), True)
