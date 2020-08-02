@@ -1,5 +1,4 @@
 language: python
-
 matrix:
   include:
     - os: linux
@@ -45,47 +44,47 @@ matrix:
     - os: windows
       language: shell
       env:
-        - PYENV_VERSION: '3.5.9'
-        - PYENV_PATH: /c/Python35
+        - PYENV_VERSION: 3.5.9
+        - PYENV_PATH: "/c/Python35"
         - CIBW_BUILD: cp35-* pp35-*
       cache:
         directories:
-          - $HOME/AppData/Local/Temp/chocolatey
-          - /C/tools/msys64
-          - $PYENV_PATH
+          - "$HOME/AppData/Local/Temp/chocolatey"
+          - "/C/tools/msys64"
+          - "$PYENV_PATH"
     - os: windows
       language: shell
       env:
-        - PYENV_VERSION: '3.6.11'
-        - PYENV_PATH: /c/Python36
+        - PYENV_VERSION: 3.6.11
+        - PYENV_PATH: "/c/Python36"
         - CIBW_BUILD: cp36-* pp36-*
       cache:
         directories:
-          - $HOME/AppData/Local/Temp/chocolatey
-          - /C/tools/msys64
-          - $PYENV_PATH
+          - "$HOME/AppData/Local/Temp/chocolatey"
+          - "/C/tools/msys64"
+          - "$PYENV_PATH"
     - os: windows
       language: shell
       env:
-        - PYENV_VERSION: '3.7.8'
-        - PYENV_PATH: /c/Python37
+        - PYENV_VERSION: 3.7.8
+        - PYENV_PATH: "/c/Python37"
         - CIBW_BUILD: cp37-* pp37-*
       cache:
         directories:
-          - $HOME/AppData/Local/Temp/chocolatey
-          - /C/tools/msys64
-          - $PYENV_PATH
+          - "$HOME/AppData/Local/Temp/chocolatey"
+          - "/C/tools/msys64"
+          - "$PYENV_PATH"
     - os: windows
       language: shell
       env:
-        - PYENV_VERSION: '3.8.5'
-        - PYENV_PATH: /c/Python38
+        - PYENV_VERSION: 3.8.5
+        - PYENV_PATH: "/c/Python38"
         - CIBW_BUILD: cp38-* pp38-*
       cache:
         directories:
-          - $HOME/AppData/Local/Temp/chocolatey
-          - /C/tools/msys64
-          - $PYENV_PATH
+          - "$HOME/AppData/Local/Temp/chocolatey"
+          - "/C/tools/msys64"
+          - "$PYENV_PATH"
 
 before_install:
   - |-
@@ -147,10 +146,8 @@ install:
 
 script:
   - python -m pytest -vv
-  # Test that we could build a package
   - python -m cibuildwheel --output-dir wheelhouse
   - ls wheelhouse
-  # Upload to PyPI on tags
   - if [ "${TRAVIS_TAG:-}" != "" ]; then
       python -m twine upload --skip-existing wheelhouse/*;
     fi
@@ -161,3 +158,7 @@ notifications:
       - mseal007@gmail.com
     on_success: change
     on_failure: always
+
+env:
+  global:
+    - TWINE_USERNAME=__token__
