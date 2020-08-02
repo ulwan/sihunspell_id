@@ -22,6 +22,7 @@ WIN32_LONG_PATH_PREFIX = "\\\\?\\"
 ctypedef enum action_type:
     add,
     stem,
+    analyze,
     spell,
     suggest,
     suffix_suggest
@@ -31,6 +32,8 @@ cdef action_type action_to_enum(basestring action):
         return add
     elif action == 'spell':
         return spell
+    elif action == 'analyze':
+        return analyze
     elif action == 'stem':
         return stem
     elif action == 'suggest':
@@ -45,6 +48,8 @@ cdef basestring action_to_string(action_type action_e):
         return 'add'
     elif action_e == spell:
         return 'spell'
+    elif action_e == analyze:
+        return 'analyze'
     elif action_e == stem:
         return 'stem'
     elif action_e == suggest:
@@ -117,6 +122,8 @@ cdef void *hunspell_worker(void *argument) nogil:
     for i from 0 <= i < args.n_words:
         if args.action_e == stem:
             args.output_counts[i] = args.hspell.stem(args.output_array_ptr + i, deref(args.word_list + i))
+        elif args.action_e == analyze:
+            args.output_counts[i] = args.hspell.analyze(args.output_array_ptr + i, deref(args.word_list + i))
         elif args.action_e == suggest:
             args.output_counts[i] = args.hspell.suggest(args.output_array_ptr + i, deref(args.word_list + i))
         elif args.action_e == suffix_suggest:
@@ -136,6 +143,7 @@ cdef class HunspellWrap(object):
     cdef public basestring _system_encoding
     cdef public object _suggest_cache
     cdef public object _suffix_cache
+    cdef public object _analyze_cache
     cdef public object _stem_cache
     cdef char *affpath
     cdef char *dpath
@@ -216,6 +224,8 @@ cdef class HunspellWrap(object):
             lang=lang, hash=md5(self._hunspell_dir))
         suffix_cache_name = "hunspell_suffix_{lang}_{hash}".format(
             lang=lang, hash=md5(self._hunspell_dir))
+        analyze_cache_name = "hunspell_analyze_{lang}_{hash}".format(
+            lang=lang, hash=md5(self._hunspell_dir))
         stem_cache_name = "hunspell_stem_{lang}_{hash}".format(
             lang=lang, hash=md5(self._hunspell_dir))
 
@@ -233,6 +243,13 @@ cdef class HunspellWrap(object):
             else:
                 NonPersistentCache(suffix_cache_name, cache_manager=manager)
 
+        if not manager.cache_registered(analyze_cache_name):
+            if disk_cache_dir:
+                custom_time_checks = [TimeCount(60, 1000000), TimeCount(300, 10000), TimeCount(900, 1)]
+                AutoSyncCache(analyze_cache_name, cache_manager=manager, time_checks=custom_time_checks)
+            else:
+                NonPersistentCache(analyze_cache_name, cache_manager=manager)
+
         if not manager.cache_registered(stem_cache_name):
             if disk_cache_dir:
                 custom_time_checks = [TimeCount(60, 1000000), TimeCount(300, 10000), TimeCount(900, 1)]
@@ -242,6 +259,7 @@ cdef class HunspellWrap(object):
 
         self._suggest_cache = manager.retrieve_cache(suggest_cache_name)
         self._suffix_cache = manager.retrieve_cache(suffix_cache_name)
+        self._analyze_cache = manager.retrieve_cache(analyze_cache_name)
         self._stem_cache = manager.retrieve_cache(stem_cache_name)
 
     def __dealloc__(self):
@@ -254,6 +272,8 @@ cdef class HunspellWrap(object):
     def get_action_cache(self, action_type action_e):
         if action_e == stem:
             return self._stem_cache
+        elif action_e == analyze:
+            return self._analyze_cache
         elif action_e == suggest:
             return self._suggest_cache
         elif action_e == suffix_suggest:
@@ -298,6 +318,10 @@ cdef class HunspellWrap(object):
             if c_word is not NULL:
                 free(c_word)
 
+    def analyze(self, basestring word):
+        # Python individual word analyzing
+        return self.c_tuple_action(analyze, word)
+
     def stem(self, basestring word):
         # Python individual word stemming
         return self.c_tuple_action(stem, word)
@@ -325,17 +349,22 @@ cdef class HunspellWrap(object):
     def bulk_suffix_suggest(self, words):
         return self.c_bulk_action(suffix_suggest, words)
 
+    def bulk_analyze(self, words):
+        return self.c_bulk_action(analyze, words)
+
     def bulk_stem(self, words):
         return self.c_bulk_action(stem, words)
 
     def save_cache(self):
         self._suggest_cache.save()
         self._suffix_cache.save()
+        self._analyze_cache.save()
         self._stem_cache.save()
 
     def clear_cache(self):
         self._suggest_cache.clear()
         self._suffix_cache.clear()
+        self._analyze_cache.clear()
         self._stem_cache.clear()
 
     def set_concurrency(self, max_threads):
@@ -360,6 +389,8 @@ cdef class HunspellWrap(object):
         try:
             if action_e == stem:
                 count = self._cxx_hunspell.stem(&s_list, c_word)
+            elif action_e == analyze:
+                count = self._cxx_hunspell.analyze(&s_list, c_word)
             elif action_e == suggest:
                 count = self._cxx_hunspell.suggest(&s_list, c_word)
             elif action_e == suffix_suggest:
@@ -388,7 +419,7 @@ cdef class HunspellWrap(object):
         cache = self.get_action_cache(action_e)
 
         for word in words:
-            if action_e in (suffix_suggest, suggest) and self.spell(word):
+            if action_e == suggest and self.spell(word):
                 # No need to check correctly spelled words
                 ret_dict[word] = (word,)
             elif word in cache:

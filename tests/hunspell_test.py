@@ -145,6 +145,11 @@ def test_stem(hunspell):
     assert hunspell.stem('permanently') == ('permanent',)
 
 
+def test_analyze(hunspell):
+    assert hunspell.analyze('dog') == (' st:dog',)
+    assert hunspell.analyze('permanently') == (' st:permanent fl:Y',)
+
+
 def test_add(hunspell):
     word = 'outofvocabularyword'
     assert not hunspell.spell(word)
@@ -170,6 +175,23 @@ def test_bulk_suggest(hunspell):
     assert sorted(suggest.keys()) == checked
 
 
+def test_bulk_suffix_suggest(hunspell):
+    hunspell.set_concurrency(3)
+    suffix_suggest = hunspell.bulk_suffix_suggest(['cat', 'do'])
+    required = set(['doing', 'doth', 'doer', 'doings', 'doers', 'doest'])
+    assert sorted(suffix_suggest.keys()) == ['cat', 'do']
+    assert isinstance(suffix_suggest['do'], tuple)
+    assert required == set(suffix_suggest['do']).intersection(required)
+
+    required = set(['cater', 'cats', "cat's", 'caters'])
+    assert isinstance(suffix_suggest['cat'], tuple)
+    assert required == set(suffix_suggest['cat']).intersection(required)
+
+    checked = ['bjn', 'dog', 'dpg', 'dyg', 'foo', 'frg', 'opg', 'pgg', 'qre', 'twg']
+    suggest = hunspell.bulk_suffix_suggest(checked)
+    assert sorted(suggest.keys()) == checked
+
+
 def test_bulk_stem(hunspell):
     hunspell.set_concurrency(3)
     assert hunspell.bulk_stem(['dog', 'permanently']) == {
@@ -181,6 +203,20 @@ def test_bulk_stem(hunspell):
         'permanently': ('permanent',),
         'twigs': ('twig',),
         'dog': ('dog',)
+    }
+
+
+def test_bulk_analyze(hunspell):
+    hunspell.set_concurrency(3)
+    assert hunspell.bulk_analyze(['dog', 'permanently']) == {
+        'permanently': (' st:permanent fl:Y',),
+        'dog': (' st:dog',)
+    }
+    assert hunspell.bulk_analyze(['dog', 'twigs', 'permanently', 'unrecorded']) == {
+        'unrecorded': ('un st:recorded fl:U',),
+        'permanently': (' st:permanent fl:Y',),
+        'twigs': (' st:twig fl:S',),
+        'dog': (' st:dog',)
     }
 
 
