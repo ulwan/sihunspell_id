@@ -42,7 +42,7 @@ required = [req.strip() for req in read('requirements.txt').splitlines() if req.
 required_dev = [req.strip() for req in read('requirements-dev.txt').splitlines() if req.strip()]
 required_test = [req.strip() for req in read('requirements-test.txt').splitlines() if req.strip()]
 package_data = {'' : datatypes}
-hunspell_config = pkgconfig('hunspell', language='c++')
+hunspell_config = pkgconfig(language='c++')
 
 if building:
     if (profiling or linetrace) and not force_rebuild:

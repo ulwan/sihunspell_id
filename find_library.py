@@ -22,22 +22,8 @@ def get_architecture():
     return 'x64' if sys.maxsize > 2**32 else 'x86'
 
 def get_prefered_msvc():
-    if sys.version_info[0] > 3 or sys.version_info[0] < 2:
-        raise RuntimeError('Unknown python version')
-    # Python 2.6-3.2
-    if sys.version_info[0] < 3 or sys.version_info[1] < 3:
-        # We should return this, but the 11 build works and we provide it
-        #return 'msvc9'
-        return 'msvc11'
-    # Python 3.3-3.4
-    elif sys.version_info[1] < 5:
-        # We should return this, but the 11 build works and we provide it
-        #return 'msvc10'
-        return 'msvc11'
-    # Python 3.5+
-    else:
-        # These versions need msvc14+ compilations
-        return 'msvc14'
+    # 3.5+ need msvc14+ compilations
+    return 'msvc14'
 
 def form_possible_names(lib, exts, extact=False):
     ret = []
@@ -76,20 +62,12 @@ def is_library(filepath, acceptable_exts):
 def is_header(filepath):
     return os.path.isfile(filepath)
 
-def include_dirs(*packages):
-    dirs = []
-    if 'hunspell' in packages:
-        dirs = [
-            os.path.abspath(os.path.join(BASE_DIR, 'hunspell')),
-            # Download path if missing
-            os.path.abspath(os.path.join(BASE_DIR, 'external', 'hunspell-1.7.0', 'src')),
-        ]
-    if platform.system() != 'Windows':
-        dirs.extend([
-            '/usr/local/include',
-            '/opt/include',
-            '/usr/include'
-        ])
+def include_dirs():
+    dirs = [
+        os.path.abspath(os.path.join(BASE_DIR, 'hunspell')),
+        # Download path if missing
+        os.path.abspath(os.path.join(BASE_DIR, 'external', 'hunspell-1.7.0', 'src')),
+    ]
     return [path for path in dirs if os.path.isdir(path)]
 
 def library_dirs(check_local=False):
@@ -147,7 +125,8 @@ def get_library_path(lib, check_local=False):
         found_lib = os.path.splitext(found_lib)[0]
     return found_lib, found_path
 
-def get_library_linker_name(lib):
+def get_library_linker_name():
+    lib = 'hunspell'
     found_lib, found_path = get_library_path(lib)
     if not found_lib:
         # Try x86 or x64
@@ -201,8 +180,8 @@ def build_hunspell_package(directory, force_build=False):
 
     return lib_path
 
-def append_links(pkg, kw):
-    linker_name, linker_path = get_library_linker_name(pkg)
+def append_links(**kw):
+    linker_name, linker_path = get_library_linker_name()
     if linker_name:
         kw['libraries'].append(linker_name)
     if linker_path:
@@ -211,10 +190,10 @@ def append_links(pkg, kw):
         kw['runtime_library_dirs'].append(linker_path)
     return linker_name
 
-def pkgconfig(*packages, **kw):
+def pkgconfig(**kw):
     try:
         flag_map = {'-I': 'include_dirs', '-L': 'library_dirs', '-l': 'libraries'}
-        status, response = getstatusoutput("pkg-config --libs --cflags {}".format(' '.join(packages)))
+        status, response = getstatusoutput("pkg-config --libs --cflags hunspell")
         if status != 0:
             raise RuntimeError(response)
         for token in response.split():
@@ -227,30 +206,23 @@ def pkgconfig(*packages, **kw):
                 kw.setdefault('extra_link_args', []).append(token)
                 kw['extra_link_args'] = list(set(kw['extra_link_args']))
     except RuntimeError:
-        kw['include_dirs'] = include_dirs(*packages)
+        kw['include_dirs'] = include_dirs()
         kw['library_dirs'] = []
         kw['runtime_library_dirs'] = []
         kw['libraries'] = []
         kw['extra_link_args'] = []
 
-        if 'hunspell' in packages and not package_found('hunspell', kw['include_dirs']):
+        if not package_found('hunspell', kw['include_dirs']):
             # Prepare for hunspell if it's missing
-            if not os.environ.get('SKIP_DOWNLOAD', False):
-                download_and_extract('https://github.com/hunspell/hunspell/archive/v1.7.0.tar.gz',
-                    os.path.join(BASE_DIR, 'external'))
-                kw['include_dirs'] = include_dirs(*packages)
-            else:
-                raise RuntimeError("Could not find hunspell and not allowed to download")
+            download_and_extract('https://github.com/hunspell/hunspell/archive/v1.7.0.tar.gz',
+                os.path.join(BASE_DIR, 'external'))
+            kw['include_dirs'] = include_dirs()
 
-        for pkg in packages:
-            if not append_links(pkg, kw):
-                if pkg == 'hunspell':
-                    lib_path = build_hunspell_package(os.path.join(BASE_DIR, 'external', 'hunspell-1.7.0'))
-                    if not append_links(pkg, kw):
-                        raise RuntimeError("Couldn't find lib dependency after building: {}".format(pkg))
-                    else:
-                        kw['extra_link_args'] += ['-Wl,-rpath,"{}"'.format(lib_path)]
-                else:
-                    raise RuntimeError("Couldn't find lib dependency: {}".format(pkg))
+        if not append_links(**kw):
+            lib_path = build_hunspell_package(os.path.join(BASE_DIR, 'external', 'hunspell-1.7.0'))
+            if not append_links(**kw):
+                raise RuntimeError("Couldn't find lib dependency after building: hunspell")
+            else:
+                kw['extra_link_args'] += ['-Wl,-rpath,"{}"'.format(lib_path)]
 
     return kw
