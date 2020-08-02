@@ -22,69 +22,53 @@ matrix:
       env:
         - PYENV_VERSION: 3.5-dev
         - CIBW_BUILD: cp35-*
-        - HOMEBREW_INSTALL_CLEANUP: 0
+        - HOMEBREW_NO_INSTALL_CLEANUP: 1
     - os: osx
       language: shell
       env:
         - PYENV_VERSION: 3.6-dev
         - CIBW_BUILD: cp36-*
-        - HOMEBREW_INSTALL_CLEANUP: 0
+        - HOMEBREW_NO_INSTALL_CLEANUP: 1
     - os: osx
       language: shell
       env:
         - PYENV_VERSION: 3.7-dev
         - CIBW_BUILD: cp37-*
-        - HOMEBREW_INSTALL_CLEANUP: 0
+        - HOMEBREW_NO_INSTALL_CLEANUP: 1
     - os: osx
       language: shell
       env:
         - PYENV_VERSION: 3.8-dev
         - CIBW_BUILD: cp38-*
-        - HOMEBREW_INSTALL_CLEANUP: 0
+        - HOMEBREW_NO_INSTALL_CLEANUP: 1
     - os: windows
       language: shell
       env:
         - PYENV_VERSION: 3.5.9
         - PYENV_PATH: "/c/Python35"
         - CIBW_BUILD: cp35-*
-      cache:
-        directories:
-          - "$HOME/AppData/Local/Temp/chocolatey"
-          - "/C/tools/msys64"
-          - "$PYENV_PATH"
+        - MSBUILD_PATH: "C:\\Program Files (x86)\\Microsoft Visual Studio\\2019\\BuildTools\\MSBuild\\Current\\Bin"
     - os: windows
       language: shell
       env:
         - PYENV_VERSION: 3.6.11
         - PYENV_PATH: "/c/Python36"
         - CIBW_BUILD: cp36-*
-      cache:
-        directories:
-          - "$HOME/AppData/Local/Temp/chocolatey"
-          - "/C/tools/msys64"
-          - "$PYENV_PATH"
+        - MSBUILD_PATH: "C:\\Program Files (x86)\\Microsoft Visual Studio\\2019\\BuildTools\\MSBuild\\Current\\Bin"
     - os: windows
       language: shell
       env:
         - PYENV_VERSION: 3.7.8
         - PYENV_PATH: "/c/Python37"
         - CIBW_BUILD: cp37-*
-      cache:
-        directories:
-          - "$HOME/AppData/Local/Temp/chocolatey"
-          - "/C/tools/msys64"
-          - "$PYENV_PATH"
+        - MSBUILD_PATH: "C:\\Program Files (x86)\\Microsoft Visual Studio\\2019\\BuildTools\\MSBuild\\Current\\Bin"
     - os: windows
       language: shell
       env:
         - PYENV_VERSION: 3.8.5
         - PYENV_PATH: "/c/Python38"
         - CIBW_BUILD: cp38-*
-      cache:
-        directories:
-          - "$HOME/AppData/Local/Temp/chocolatey"
-          - "/C/tools/msys64"
-          - "$PYENV_PATH"
+        - MSBUILD_PATH: "C:\\Program Files (x86)\\Microsoft Visual Studio\\2019\\BuildTools\\MSBuild\\Current\\Bin"
 
 before_install:
   - |-
@@ -107,8 +91,9 @@ before_install:
           python --version
           ;;
         windows)
+          choco install visualstudio2019buildtools --package-parameters "--add Microsoft.VisualStudio.Component.VC.Tools.x86.x64"
           choco install python --version $PYENV_VERSION
-          export PATH="$PYENV_PATH:$PYENV_PATH/Scripts:$PATH"
+          export PATH="$PYENV_PATH:$PYENV_PATH/Scripts:$MSBUILD_PATH:$PATH"
           pip install -U pip
           python --version
           ;;
