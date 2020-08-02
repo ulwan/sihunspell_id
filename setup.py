@@ -57,7 +57,7 @@ if building:
             [os.path.join('hunspell', 'hunspell.pyx')],
             **hunspell_config
         )
-    ], force=force_rebuild)
+    ], force=force_rebuild, compiler_directives={'language_level' : "3"})
 else:
     from setuptools.command.build_ext import build_ext
     ext_modules = [
