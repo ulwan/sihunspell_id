@@ -3,37 +3,125 @@ language: python
 matrix:
   include:
     - os: linux
-      python: 2.7
-    - os: linux
       python: 3.5
     - os: linux
       python: 3.6
     - os: linux
-      language: python
-      python: 3.8
-      dist: xenial
-      sudo: true
-    - os: linux
-      language: python
       python: 3.7
-      dist: xenial
-      sudo: true
     - os: linux
-      language: python
-      python: 3.6
-      # Don't allow the python library to download (check if it can use an installed hunspell)
-      env: SKIP_DOWNLOAD=true
-      dist: bionic
-      sudo: true
+      python: 3.8
+    - os: osx
+      language: shell
+      env: PYENV_VERSION=3.5-dev
+    - os: osx
+      language: shell
+      env: PYENV_VERSION=3.6-dev
+    - os: osx
+      language: shell
+      env: PYENV_VERSION=3.7-dev
+    - os: osx
+      language: shell
+      env: PYENV_VERSION=3.8-dev
+    - os: windows
+      language: shell
+      env: PYENV_VERSION=3.5.9 PYENV_PATH=/c/Python35
+      cache:
+        directories:
+          - $HOME/AppData/Local/Temp/chocolatey
+          - /C/tools/msys64
+          - $PYENV_PATH
+    - os: windows
+      language: shell
+      env: PYENV_VERSION=3.6.11 PYENV_PATH=/c/Python36
+      cache:
+        directories:
+          - $HOME/AppData/Local/Temp/chocolatey
+          - /C/tools/msys64
+          - $PYENV_PATH
+    - os: windows
+      language: shell
+      env: PYENV_VERSION=3.7.8 PYENV_PATH=/c/Python37
+      cache:
+        directories:
+          - $HOME/AppData/Local/Temp/chocolatey
+          - /C/tools/msys64
+          - $PYENV_PATH
+    - os: windows
+      language: shell
+      env: PYENV_VERSION=3.8.5 PYENV_PATH=/c/Python38
+      cache:
+        directories:
+          - $HOME/AppData/Local/Temp/chocolatey
+          - /C/tools/msys64
+          - $PYENV_PATH
 
 before_install:
-  # For debug purposes
-  - if [[ "$SKIP_DOWNLOAD" == "true" ]]; then sudo apt-cache search hunspell; fi
-  - if [[ "$SKIP_DOWNLOAD" == "true" ]]; then sudo apt-get install libhunspell-1.6-0 libhunspell-dev; fi
-  # For debug purposes
-  - python --version
-install: "python setup.py install && pip install -r requirements-test.txt"
-script: "pytest"
+  - |-
+      case $TRAVIS_OS_NAME in
+        linux)
+          sudo apt install -y autoconf automake autopoint libtool
+          pip install -U pip
+          python --version
+          ;;
+      case $TRAVIS_OS_NAME in
+        osx)
+          brew update
+          brew install autoconf automake libtool gettext
+          brew link gettext --force
+          eval "$(pyenv init -)"
+          pyenv install $PYENV_VERSION
+          pyenv global $PYENV_VERSION
+          pyenv rehash
+          pip install -U pip
+          python --version
+          ;;
+      case $TRAVIS_OS_NAME in
+        windows)
+          [[ ! -f C:/tools/msys64/msys2_shell.cmd ]] && rm -rf C:/tools/msys64
+          choco uninstall -y mingw
+          choco upgrade --no-progress -y msys2
+          export msys2='cmd //C RefreshEnv.cmd '
+          export msys2+='& set MSYS=winsymlinks:nativestrict '
+          export msys2+='& C:\\tools\\msys64\\msys2_shell.cmd -defterm -no-start'
+          export mingw64="$msys2 -mingw64 -full-path -here -c "\"\$@"\" --"
+          export msys2+=" -msys2 -c "\"\$@"\" --"
+          $msys2 pacman --sync --noconfirm --needed base-devel mingw-w64-x86_64-toolchain mingw-w64-x86_64-libtool
+          ## Install more MSYS2 packages from https://packages.msys2.org/base here
+          taskkill //IM gpg-agent.exe //F  # https://travis-ci.community/t/4967
+          export PATH=/C/tools/msys64/mingw64/bin:$PATH
+          export MAKE=mingw32-make  # so that Autotools can find it
+          choco install python --version $PYENV_VERSION
+          export PATH="$PYENV_PATH:$PYENV_PATH/Scripts:$PATH"
+          pip3 install -U pip
+          python3 --version
+          ;;
+      esac
+
+before_cache:
+  - |-
+      case $TRAVIS_OS_NAME in
+        windows)
+          # https://unix.stackexchange.com/a/137322/107554
+          $msys2 pacman --sync --clean --noconfirm
+          ;;
+      esac
+
+install:
+  - pip install -r requirements.txt
+  - pip install -r requirements-dev.txt
+  - pip install -r requirements-test.txt
+  - pip install cibuildwheel
+  - touch .cibuildwheel
+  - pip install .
+
+script:
+  - python -m pytest -vv
+  # Test that we could build a package
+  - python -m cibuildwheel --output-dir wheelhouse
+  # Upload to PyPI on tags
+  - if [ "${TRAVIS_TAG:-}" != "" ]; then
+      python -m twine upload --skip-existing wheelhouse/*;
+    fi
 
 notifications:
   email:

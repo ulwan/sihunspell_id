@@ -26,9 +26,8 @@ def cleanup_pycs():
         except:
             pass
 
-python_2 = sys.version_info[0] == 2
 def read(fname):
-    with open(fname, 'rU' if python_2 else 'r') as fhandle:
+    with open(fname, 'r') as fhandle:
         return fhandle.read()
 
 profiling = '--profile' in sys.argv or '-p' in sys.argv
@@ -100,7 +99,6 @@ setup(
     },
     license='MIT + MPL 1.1/GPL 2.0/LGPL 2.1',
     packages=packages,
-    scripts=['find_library.py', 'tar_download.py'],
     test_suite='tests',
     zip_safe=False,
     url='https://github.com/MSeal/cython_hunspell',
@@ -108,7 +106,7 @@ setup(
     package_data=package_data,
     keywords=['hunspell', 'spelling', 'correction'],
     classifiers=[
-        'Development Status :: 4 - Beta',
+        'Development Status :: 5 - Production/Stable',
         'Topic :: Utilities',
         'License :: OSI Approved :: MIT License',
         'Natural Language :: English',
