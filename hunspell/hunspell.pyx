@@ -302,15 +302,27 @@ cdef class HunspellWrap(object):
             if c_path is not NULL:
                 free(c_path)
 
-    def add(self, basestring word):
+    def add(self, basestring word, basestring example=None):
         # Python add individual word to dictionary
         cdef char *c_word = NULL
+        cdef char *c_example = NULL
         copy_to_c_string(word, &c_word, self._dic_encoding)
         try:
-            return self._cxx_hunspell.add(c_word)
+            if example:
+                copy_to_c_string(example, &c_example, self._dic_encoding)
+                try:
+                    return self._cxx_hunspell.add_with_affix(c_word, c_example)
+                finally:
+                    if c_example is not NULL:
+                        free(c_example)
+            else:
+                return self._cxx_hunspell.add(c_word)
         finally:
             if c_word is not NULL:
                 free(c_word)
+
+    def add_with_affix(self, basestring word, basestring example):
+        return self.add(word, example)
 
     def remove(self, basestring word):
         # Python remove individual word from dictionary

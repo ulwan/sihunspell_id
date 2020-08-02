@@ -159,6 +159,15 @@ def test_add(hunspell):
     assert word in hunspell.suggest(typo)
 
 
+def test_add_with_affix(hunspell):
+    word = 'outofvocabularyword'
+    assert not hunspell.spell(word)
+    hunspell.add_with_affix(word, 'example')
+    assert hunspell.spell(word)
+    typo = word + 'd'
+    assert word in hunspell.suggest(typo)
+
+
 def test_remove(hunspell):
     word = 'dog'
     assert hunspell.spell(word)
