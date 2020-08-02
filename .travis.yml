@@ -4,27 +4,50 @@ matrix:
   include:
     - os: linux
       python: 3.5
+      env:
+        - CIBW_BUILD: cp35-* pp35-*
     - os: linux
       python: 3.6
+      env:
+        - CIBW_BUILD: cp36-* pp36-*
     - os: linux
       python: 3.7
+      env:
+        - CIBW_BUILD: cp37-* pp37-*
     - os: linux
       python: 3.8
+      env:
+        - CIBW_BUILD: cp38-* pp38-*
     - os: osx
       language: shell
-      env: PYENV_VERSION=3.5-dev
+      env:
+        - PYENV_VERSION: 3.5-dev
+        - CIBW_BUILD: cp35-* pp35-*
+        - HOMEBREW_INSTALL_CLEANUP: 0
     - os: osx
       language: shell
-      env: PYENV_VERSION=3.6-dev
+      env:
+        - PYENV_VERSION: 3.6-dev
+        - CIBW_BUILD: cp36-* pp36-*
+        - HOMEBREW_INSTALL_CLEANUP: 0
     - os: osx
       language: shell
-      env: PYENV_VERSION=3.7-dev
+      env:
+        - PYENV_VERSION: 3.7-dev
+        - CIBW_BUILD: cp37-* pp37-*
+        - HOMEBREW_INSTALL_CLEANUP: 0
     - os: osx
       language: shell
-      env: PYENV_VERSION=3.8-dev
+      env:
+        - PYENV_VERSION: 3.8-dev
+        - CIBW_BUILD: cp38-* pp38-*
+        - HOMEBREW_INSTALL_CLEANUP: 0
     - os: windows
       language: shell
-      env: PYENV_VERSION=3.5.9 PYENV_PATH=/c/Python35
+      env:
+        - PYENV_VERSION: '3.5.9'
+        - PYENV_PATH: /c/Python35
+        - CIBW_BUILD: cp35-* pp35-*
       cache:
         directories:
           - $HOME/AppData/Local/Temp/chocolatey
@@ -32,7 +55,10 @@ matrix:
           - $PYENV_PATH
     - os: windows
       language: shell
-      env: PYENV_VERSION=3.6.11 PYENV_PATH=/c/Python36
+      env:
+        - PYENV_VERSION: '3.6.11'
+        - PYENV_PATH: /c/Python36
+        - CIBW_BUILD: cp36-* pp36-*
       cache:
         directories:
           - $HOME/AppData/Local/Temp/chocolatey
@@ -40,7 +66,10 @@ matrix:
           - $PYENV_PATH
     - os: windows
       language: shell
-      env: PYENV_VERSION=3.7.8 PYENV_PATH=/c/Python37
+      env:
+        - PYENV_VERSION: '3.7.8'
+        - PYENV_PATH: /c/Python37
+        - CIBW_BUILD: cp37-* pp37-*
       cache:
         directories:
           - $HOME/AppData/Local/Temp/chocolatey
@@ -48,7 +77,10 @@ matrix:
           - $PYENV_PATH
     - os: windows
       language: shell
-      env: PYENV_VERSION=3.8.5 PYENV_PATH=/c/Python38
+      env:
+        - PYENV_VERSION: '3.8.5'
+        - PYENV_PATH: /c/Python38
+        - CIBW_BUILD: cp38-* pp38-*
       cache:
         directories:
           - $HOME/AppData/Local/Temp/chocolatey

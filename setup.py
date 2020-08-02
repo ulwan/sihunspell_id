@@ -83,7 +83,7 @@ class build_ext_compiler_check(build_ext):
 VERSION = read(os.path.join(BASE_DIR, 'VERSION')).strip()
 
 setup(
-    name='CyHunspell',
+    name='cyhunspell',
     version=VERSION,
     author='Matthew Seal',
     author_email='mseal007@gmail.com',
