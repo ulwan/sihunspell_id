@@ -127,7 +127,7 @@ def run_proc_delay_print(*args):
     for line in stderr.decode(encoding='utf-8').split('\n'):
         print(line, file=sys.stderr)
     if proc.returncode != 0:
-        raise RuntimeError(f"Process '{args}' returned with a non-zero exit code")
+        raise RuntimeError("Process '{}' returned with a non-zero exit code".format(args))
 
 def build_hunspell_package(directory, force_build=False):
     if platform.system() == 'Windows':
