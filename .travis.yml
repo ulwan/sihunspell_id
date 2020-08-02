@@ -149,6 +149,7 @@ script:
   - python -m pytest -vv
   # Test that we could build a package
   - python -m cibuildwheel --output-dir wheelhouse
+  - ls wheelhouse
   # Upload to PyPI on tags
   - if [ "${TRAVIS_TAG:-}" != "" ]; then
       python -m twine upload --skip-existing wheelhouse/*;
