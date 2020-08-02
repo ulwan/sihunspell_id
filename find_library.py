@@ -65,53 +65,23 @@ def is_header(filepath):
 def include_dirs():
     dirs = [
         os.path.abspath(os.path.join(BASE_DIR, 'hunspell')),
-        # Download path if missing
         os.path.abspath(os.path.join(BASE_DIR, 'external', 'hunspell-1.7.0', 'src')),
     ]
     return [path for path in dirs if os.path.isdir(path)]
 
-def library_dirs(check_local=False):
-    dirs = [os.path.abspath(BASE_DIR)]
-    if platform.system() == 'Windows':
-        dirs.extend([
-            os.path.dirname(__file__),
-            os.path.abspath(BASE_DIR),
-            os.path.join(os.environ.get('SystemRoot'), 'system'),
-            os.path.join(os.environ.get('SystemRoot'), 'system32'),
-            os.environ.get('SystemRoot')
-        ])
-        if check_local:
-            dirs.append(os.path.join(os.path.dirname(__file__), 'libs', 'msvc'))
-        dirs.extend(list(set(os.environ.get('PATH').split(os.path.pathsep))))
-        dirs = [os.path.abspath(path) for path in dirs]
-    else:
-        dirs.extend([
-            os.path.abspath(os.path.join(get_python_lib(), 'libs', 'unix')),
-            '/usr/local/lib64',
-            '/usr/local/lib',
-            '/usr/local/libdata',
-            '/opt/local/lib',
-            '/usr/lib/x86_64-linux-gnu',
-            '/usr/lib64',
-            '/usr/lib',
-            '/usr/X11/lib',
-            '/usr/share',
-        ])
-    dirs = list(set(dirs))
-    try:
-        while True:
-            dirs.remove(None)
-    except ValueError:
-        pass
+def library_dirs():
+    dirs = [
+        os.path.abspath(os.path.join(BASE_DIR, 'external', 'hunspell-1.7.0', 'build', 'lib')),
+        os.path.abspath(os.path.join(BASE_DIR, 'libs', 'msvc')),
+    ]
     return [path for path in dirs if os.path.isdir(path)]
 
-def get_library_path(lib, check_local=False):
-    paths = library_dirs(check_local)
+def get_library_path(lib):
+    paths = library_dirs()
     acceptable_exts = [
         '',
         '.so'
     ]
-
     if platform.system() == 'Windows':
         acceptable_exts = [
             '.lib'
@@ -119,7 +89,7 @@ def get_library_path(lib, check_local=False):
     elif platform.system() == 'Darwin':
         acceptable_exts.append('.dylib')
 
-    names = form_possible_names(lib, acceptable_exts, check_local)
+    names = form_possible_names(lib, acceptable_exts)
     found_lib, found_path = do_search(paths, names, lambda filepath: is_library(filepath, acceptable_exts))
     if found_lib and platform.system() == 'Windows':
         found_lib = os.path.splitext(found_lib)[0]
@@ -130,13 +100,13 @@ def get_library_linker_name():
     found_lib, found_path = get_library_path(lib)
     if not found_lib:
         # Try x86 or x64
-        found_lib, found_path = get_library_path(lib + get_architecture(), True)
+        found_lib, found_path = get_library_path(lib + get_architecture())
         if not found_lib:
             found_lib, found_path = get_library_path('-'.join(
-                [lib, get_prefered_msvc(), get_architecture()]), True)
+                [lib, get_prefered_msvc(), get_architecture()]))
 
     if found_lib:
-        found_lib = re.sub(r'.dylib$|.so$|.dll$|.dll.a$|.a$', '', found_lib.split(os.path.sep)[-1])
+        found_lib = re.sub(r'.dylib$|.so$|.lib$', '', found_lib.split(os.path.sep)[-1])
         if platform.system() != 'Windows':
             found_lib = re.sub(r'^lib|', '', found_lib)
 
@@ -150,12 +120,15 @@ def package_found(package, include_dirs):
     return False
 
 def build_hunspell_package(directory, force_build=False):
-    tmp_lib_path = os.path.abspath(os.path.join(os.path.dirname(__file__), 'libs', 'tmp'))
+    tmp_lib_path = os.path.abspath(os.path.join(os.path.dirname(__file__), 'external', 'build'))
+    lib_path = os.path.join(tmp_lib_path, 'lib')
     if not os.path.exists(tmp_lib_path):
         os.makedirs(tmp_lib_path)
 
+    expected_lib_name = 'libhunspell-1.7.so.0.0.1'
+
     olddir = os.getcwd()
-    if force_build or not os.path.exists(os.path.join(tmp_lib_path, 'lib', 'libhunspell-1.7.so.0.0.1')):
+    if force_build or not os.path.exists(os.path.join(lib_path, expected_lib_name)):
         try:
             os.chdir(directory)
             check_call(['autoreconf', '-vfi'])
@@ -165,18 +138,13 @@ def build_hunspell_package(directory, force_build=False):
         finally:
             os.chdir(olddir)
 
-    lib_path = os.path.abspath(os.path.join(get_python_lib(), 'libs', 'unix'))
-    if os.path.exists(lib_path):
-        shutil.rmtree(lib_path)
-    os.makedirs(lib_path)
-
-    shutil.copyfile(
-        os.path.join(tmp_lib_path, 'lib', 'libhunspell-1.7.so.0.0.1'),
-        os.path.join(lib_path, 'libhunspell-1.7.so.0'))
-    os.symlink(
-        os.path.join(lib_path, 'libhunspell-1.7.so.0'),
-        os.path.join(lib_path, 'libhunspell.so'))
-    shutil.rmtree(tmp_lib_path)
+    if platform.system() == 'Linux':
+        shutil.copyfile(
+            os.path.join(lib_path, expected_lib_name),
+            os.path.join(lib_path, 'libhunspell-1.7.so.0'))
+        os.symlink(
+            os.path.join(lib_path, 'libhunspell-1.7.so.0'),
+            os.path.join(lib_path, 'libhunspell.so'))
 
     return lib_path
 
@@ -224,5 +192,5 @@ def pkgconfig(**kw):
                 raise RuntimeError("Couldn't find lib dependency after building: hunspell")
             else:
                 kw['extra_link_args'] += ['-Wl,-rpath,"{}"'.format(lib_path)]
-
+    
     return kw

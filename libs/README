@@ -1,0 +1,48 @@
+The compiled libraries for Microsoft Visual Studio are included, because they are very difficult to build automatically.
+
+For other platforms besides windows, Hunspell is dynamically downloaded and built.
+
+The hunspell license is included in HUNSPELL_LICENSE_LESSER for the two compiled binaries -- its compatible with this repositories license.
+
+
+
+Steps to reproduce the msvc files:
+
+
+Install Visual Studios 2019.
+
+Run find_library.py to download windows usuable version of hunspell. This will
+populate the 'external' directory.
+
+WithVisual Studio, open 'external\hunspell-1.7.0\msvc\Hunspell.sln'.
+Allow visual studio to upgrade the solution if prompted.
+
+Then right click on libhunspell from the solution explorer and choose 'properties'.
+Change to Release Configuration
+Under 'C/C++ -> All Options' make the following changes:
+* Runtime Library -> Multi-Threaded (/MT)
+* Whole program Optimization -> No
+
+Then click on Configuration Manager in upper right corner.
+Uncheck 'Build' checkboxes for 'hunspell' and 'testparser' (or delete those options)
+Under 'libhunspell -> platform' select '<New>'
+Change New platform dropdown select 'x64' and click 'Ok'
+
+From top navigation bar, select Release and x64.
+Then from the menu select 'Build -> Build Solution'.
+
+Go to external\hunspell-1.7.0\msvc\x64\Release\' copy 'libhunspell.lib' to
+'cython_hunspell/libs/msvc/libhunspell-msvc14-x64.lib'.
+
+Now for 32 bit build:
+
+From top navigation bar, select Release and Win32. Make sure the configurations changes
+are the same for the Win32 profile. Then from the menu select 'Build -> Build Solution'.
+
+Go to external\hunspell-1.7.0\msvc\Release\libhunspell\' copy 'libhunspell.lib' to
+'cython_hunspell/libs/msvc/libhunspell-msvc14-x86.lib'.
+
+
+You should now have 2 new files:
+libhunspell-msvc14-x86.lib
+libhunspell-msvc14-x64.lib
