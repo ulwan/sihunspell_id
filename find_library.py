@@ -138,10 +138,15 @@ def build_hunspell_package(directory, force_build=False):
     if not os.path.exists(tmp_lib_path):
         os.makedirs(tmp_lib_path)
 
-    expected_lib_name = 'libhunspell-1.7.so.0.0.1'
+    if platform.system() == 'Linux':
+        expected_lib_name = 'libhunspell-1.7.so'
+        expected_lib_path = os.path.join(lib_path, expected_lib_name)
+    else: # OSX
+        expected_lib_name = 'libhunspell-1.7.a'
+        expected_lib_path = os.path.join(lib_path, expected_lib_name)
 
     olddir = os.getcwd()
-    if force_build or not os.contentspath.exists(os.path.join(lib_path, expected_lib_name)):
+    if force_build or not os.contentspath.exists(expected_lib_path):
         if os.path.exists(lib_path):
             shutil.rmtree(lib_path)
         try:
@@ -157,13 +162,8 @@ def build_hunspell_package(directory, force_build=False):
         for filename in os.listdir(lib_path):
             if os.path.isfile(os.path.join(lib_path, filename)):
                 print('\t' + filename)
-        if not os.path.exists(os.path.join(lib_path, 'libhunspell.so')):
-            print(f"Linking '{os.path.join(lib_path, expected_lib_name)}' to '{os.path.join(lib_path, 'libhunspell.so')}'")
-            os.symlink(
-                os.path.join(lib_path, expected_lib_name),
-                os.path.join(lib_path, 'libhunspell.so'))
 
-    return lib_path
+    return 'hunspell-1.7', lib_path
 
 def pkgconfig(**kw):
     try:
@@ -201,9 +201,11 @@ def pkgconfig(**kw):
                 raise RuntimeError("Could not find library dependencies for Windows")
             if linker_path:
                 kw['library_dirs'].append(linker_path)
+            kw['extra_link_args'] = ['/NODEFAULTLIB:libucrt.lib ucrt.lib']
         else:
-            kw['library_dirs'] = build_hunspell_package(os.path.join(BASE_DIR, 'external', 'hunspell-1.7.0'), True)
-            kw['libraries'] = 'libhunspell.so'
-            kw['extra_link_args'] += ['-Wl']
+            lib_name, lib_path = build_hunspell_package(os.path.join(BASE_DIR, 'external', 'hunspell-1.7.0'), True)
+            kw['library_dirs'] = [lib_path]
+            kw['libraries'] = [lib_name]
+            kw['extra_link_args'] = ['-Wl,-rpath,"{}"'.format(lib_path)]
     
     return kw
