@@ -1,5 +1,4 @@
 [![Build Status](https://travis-ci.org/MSeal/cython_hunspell.svg?branch=master)](https://travis-ci.org/MSeal/cython_hunspell)
-[![Build status](https://ci.appveyor.com/api/projects/status/vche84ngshvgergp/branch/master?svg=true)](https://ci.appveyor.com/project/MSeal/cython-hunspell/branch/master)
 [![PyPI version shields.io](https://img.shields.io/pypi/v/CyHunspell.svg)](https://pypi.python.org/pypi/CyHunspell/)
 [![PyPI pyversions](https://img.shields.io/pypi/pyversions/CyHunspell.svg)](https://pypi.python.org/pypi/CyHunspell/)
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
