@@ -8,7 +8,7 @@ import platform
 import re
 import sys
 import shutil
-from subprocess import check_call
+from subprocess import run, PIPE, STDOUT
 from tar_download import download_and_extract
 from distutils.sysconfig import get_python_lib
 try:
@@ -120,6 +120,9 @@ def package_found(package, include_dirs):
     return False
 
 def build_hunspell_package(directory, force_build=False):
+    if platform.system() == 'Windows':
+        raise RuntimeError("Cannot build directly for windows OS. Please build manually by follow instructions at /libs/msvc/README")
+
     tmp_lib_path = os.path.abspath(os.path.join(os.path.dirname(__file__), 'external', 'build'))
     lib_path = os.path.join(tmp_lib_path, 'lib')
     if not os.path.exists(tmp_lib_path):
@@ -131,20 +134,19 @@ def build_hunspell_package(directory, force_build=False):
     if force_build or not os.path.exists(os.path.join(lib_path, expected_lib_name)):
         try:
             os.chdir(directory)
-            check_call(['autoreconf', '-vfi'])
-            check_call(['./configure', '--prefix='+tmp_lib_path])
-            check_call('make')
-            check_call(['make', 'install'])
+            run(['autoreconf', '-vfi'], check=True, stdout=PIPE, stderr=STDOUT)
+            run(['./configure', '--prefix='+tmp_lib_path], check=True, stdout=PIPE, stderr=STDOUT)
+            run('make', check=True, stdout=PIPE, stderr=STDOUT)
+            run(['make', 'install'], check=True, stdout=PIPE, stderr=STDOUT)
         finally:
             os.chdir(olddir)
 
-    if platform.system() == 'Linux':
-        shutil.copyfile(
-            os.path.join(lib_path, expected_lib_name),
-            os.path.join(lib_path, 'libhunspell-1.7.so.0'))
-        os.symlink(
-            os.path.join(lib_path, 'libhunspell-1.7.so.0'),
-            os.path.join(lib_path, 'libhunspell.so'))
+    shutil.copyfile(
+        os.path.join(lib_path, expected_lib_name),
+        os.path.join(lib_path, 'libhunspell-1.7.so.0'))
+    os.symlink(
+        os.path.join(lib_path, 'libhunspell-1.7.so.0'),
+        os.path.join(lib_path, 'libhunspell.so'))
 
     return lib_path
 
