@@ -47,28 +47,28 @@ matrix:
         - PYENV_VERSION: 3.5.9
         - PYENV_PATH: "/c/Python35"
         - CIBW_BUILD: cp35-*
-        - MSBUILD_PATH: "C:\Program Files (x86)\Microsoft Visual Studio\2019\BuildTools\MSBuild\Current\Bin"
+        - MSBUILD_PATH: "C:\\Program Files (x86)\\Microsoft Visual Studio\\2019\\BuildTools\\MSBuild\\Current\\Bin"
     - os: windows
       language: shell
       env:
         - PYENV_VERSION: 3.6.11
         - PYENV_PATH: "/c/Python36"
         - CIBW_BUILD: cp36-*
-        - MSBUILD_PATH: "C:\Program Files (x86)\Microsoft Visual Studio\2019\BuildTools\MSBuild\Current\Bin"
+        - MSBUILD_PATH: "C:\\Program Files (x86)\\Microsoft Visual Studio\\2019\\BuildTools\\MSBuild\\Current\\Bin"
     - os: windows
       language: shell
       env:
         - PYENV_VERSION: 3.7.8
         - PYENV_PATH: "/c/Python37"
         - CIBW_BUILD: cp37-*
-        - MSBUILD_PATH: "C:\Program Files (x86)\Microsoft Visual Studio\2019\BuildTools\MSBuild\Current\Bin"
+        - MSBUILD_PATH: "C:\\Program Files (x86)\\Microsoft Visual Studio\\2019\\BuildTools\\MSBuild\\Current\\Bin"
     - os: windows
       language: shell
       env:
         - PYENV_VERSION: 3.8.5
         - PYENV_PATH: "/c/Python38"
         - CIBW_BUILD: cp38-*
-        - MSBUILD_PATH: "C:\Program Files (x86)\Microsoft Visual Studio\2019\BuildTools\MSBuild\Current\Bin"
+        - MSBUILD_PATH: "C:\\Program Files (x86)\\Microsoft Visual Studio\\2019\\BuildTools\\MSBuild\\Current\\Bin"
 
 before_install:
   - |-
