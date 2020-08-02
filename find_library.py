@@ -19,6 +19,7 @@ except ImportError:
 BASE_DIR = os.path.abspath(os.path.dirname(__file__))
 
 def get_architecture():
+    print(os.environ)
     return 'x64' if sys.maxsize > 2**32 else 'x86'
 
 def get_prefered_msvc():
