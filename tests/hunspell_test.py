@@ -159,6 +159,14 @@ def test_add(hunspell):
     assert word in hunspell.suggest(typo)
 
 
+def test_remove(hunspell):
+    word = 'dog'
+    assert hunspell.spell(word)
+    hunspell.remove(word)
+    assert not hunspell.spell(word)
+    assert 'dog' not in hunspell.suggest('dog')
+
+
 def test_bulk_suggest(hunspell):
     hunspell.set_concurrency(3)
     suggest = hunspell.bulk_suggest(['dog', 'dpg'])

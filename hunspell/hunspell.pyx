@@ -8,7 +8,6 @@ from locale import getpreferredencoding
 
 from libc.stdlib cimport *
 from libc.string cimport *
-from libc.stdio cimport *
 from cython.operator cimport dereference as deref
 
 # Use full path for cimport ONLY!
@@ -21,6 +20,7 @@ WIN32_LONG_PATH_PREFIX = "\\\\?\\"
 
 ctypedef enum action_type:
     add,
+    remove,
     stem,
     analyze,
     spell,
@@ -30,6 +30,8 @@ ctypedef enum action_type:
 cdef action_type action_to_enum(basestring action):
     if action == 'add':
         return add
+    elif action == 'remove':
+        return remove
     elif action == 'spell':
         return spell
     elif action == 'analyze':
@@ -46,6 +48,8 @@ cdef action_type action_to_enum(basestring action):
 cdef basestring action_to_string(action_type action_e):
     if action_e == add:
         return 'add'
+    elif action_e == remove:
+        return 'remove'
     elif action_e == spell:
         return 'spell'
     elif action_e == analyze:
@@ -308,6 +312,16 @@ cdef class HunspellWrap(object):
             if c_word is not NULL:
                 free(c_word)
 
+    def remove(self, basestring word):
+        # Python remove individual word from dictionary
+        cdef char *c_word = NULL
+        copy_to_c_string(word, &c_word, self._dic_encoding)
+        try:
+            return self._cxx_hunspell.remove(c_word)
+        finally:
+            if c_word is not NULL:
+                free(c_word)
+
     def spell(self, basestring word):
         # Python individual word spellcheck
         cdef char *c_word = NULL
@@ -338,6 +352,8 @@ cdef class HunspellWrap(object):
         cdef action_type action_e = action_to_enum(action)
         if action_e == add:
             return self.add(word)
+        elif action_e == remove:
+            return self.remove(word)
         elif action_e == spell:
             return self.spell(word)
         else:

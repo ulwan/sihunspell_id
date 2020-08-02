@@ -4,6 +4,7 @@
 - Added support for `suffix_suggest`
 - Added support for `analyze`
 - Added support for `add_dic`
+- Added support for `remove`
 
 # 1.3.3
 - Mapped the `add` function to the cython wrapper class.
