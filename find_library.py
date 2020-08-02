@@ -19,7 +19,6 @@ except ImportError:
 BASE_DIR = os.path.abspath(os.path.dirname(__file__))
 
 def get_architecture():
-    print(os.environ)
     return 'x64' if sys.maxsize > 2**32 else 'x86'
 
 def get_prefered_msvc():
@@ -143,7 +142,7 @@ def build_hunspell_package(directory, force_build=False):
         expected_lib_name = 'libhunspell-1.7.so'
         expected_lib_path = os.path.join(lib_path, expected_lib_name)
     else: # OSX
-        expected_lib_name = 'libhunspell-1.7.a'
+        expected_lib_name = 'libhunspell-1.7.dylib'
         expected_lib_path = os.path.join(lib_path, expected_lib_name)
 
     olddir = os.getcwd()
@@ -164,7 +163,7 @@ def build_hunspell_package(directory, force_build=False):
             if os.path.isfile(os.path.join(lib_path, filename)):
                 print('\t' + filename)
 
-    return 'hunspell-1.7', lib_path
+    return ':'+expected_lib_name, lib_path
 
 def pkgconfig(**kw):
     try:

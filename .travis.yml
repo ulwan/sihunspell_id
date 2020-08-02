@@ -92,6 +92,7 @@ before_install:
           ;;
         windows)
           choco install visualstudio2019buildtools --package-parameters "--add Microsoft.VisualStudio.Component.VC.Tools.x86.x64"
+          choco install visualstudio2019-workload-vctools
           choco install python --version $PYENV_VERSION
           export PATH="$PYENV_PATH:$PYENV_PATH/Scripts:$MSBUILD_PATH:$PATH"
           python -m ensurepip
