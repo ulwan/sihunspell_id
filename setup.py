@@ -71,7 +71,7 @@ else:
 if platform.system() == 'Linux':
     build_lib_path = os.path.join(BASE_DIR, 'external', 'build', 'lib', 'libhunspell-1.7.so.0')
     hunspell_so_path = os.path.join(BASE_DIR, 'hunspell', 'libhunspell-1.7.so.0')
-    os.rename(build_lib_path, hunspell_so_path)
+    shutil.copyfile(build_lib_path, hunspell_so_path)
 if platform.system() == 'Windows':
     build_lib_path = os.path.join(BASE_DIR, 'external', 'build', 'lib')
     prebuilt_lib_path = os.path.join(BASE_DIR, 'libs', 'msvc')
