@@ -138,7 +138,7 @@ def build_hunspell_package(directory, force_build=False):
         os.makedirs(tmp_lib_path)
 
     if platform.system() == 'Linux':
-        expected_lib_name = 'libhunspell-1.7.so.0'
+        expected_lib_name = 'libhunspell-1.7.so'
         expected_lib_path = os.path.join(lib_path, expected_lib_name)
     else: # OSX
         expected_lib_name = 'libhunspell-1.7.dylib'
@@ -160,12 +160,10 @@ def build_hunspell_package(directory, force_build=False):
         if platform.system() == 'Linux':
             # There's a build issue where sometimes linux builds look for symlink files that don't exist later
             os.rename(os.path.join(lib_path, 'libhunspell-1.7.so.0.0.1'), expected_lib_path)
-            for f in glob.glob(os.path.join(lib_path, 'libhunspell-1.7.so.0.*')):
+            for f in glob.glob(os.path.join(lib_path, 'libhunspell-1.7.so.*')):
                 os.remove(f)
-            if os.path.exists(os.path.join(lib_path, 'libhunspell-1.7.so')):
-                os.remove(os.path.join(lib_path, 'libhunspell-1.7.so'))
             # Copy to our runtime location
-            build_lib_path = os.path.join(BASE_DIR, 'external', 'build', 'lib', 'libhunspell-1.7.so.0')
+            build_lib_path = os.path.join(BASE_DIR, 'external', 'build', 'lib', 'libhunspell-1.7.so')
             hunspell_so_dir = os.path.join(BASE_DIR, 'libs', 'linux')
             hunspell_so_path = os.path.join(hunspell_so_dir, 'libhunspell-1.7.so.0')
         else:
