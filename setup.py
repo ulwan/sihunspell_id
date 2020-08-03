@@ -68,10 +68,16 @@ else:
             **hunspell_config
         )
     ]
+if platform.system() == 'Linux':
+    build_lib_path = os.path.join(BASE_DIR, 'external', 'build', 'lib', 'libhunspell-1.7.so.0')
+    hunspell_so_path = os.path.join(BASE_DIR, 'hunspell', 'libhunspell-1.7.so.0')
+    os.rename(build_lib_path, hunspell_so_path)
 if platform.system() == 'Windows':
-    if not os.path.exists('external/build/lib'):
-        os.makedirs('external/build/lib')
-    shutil.copytree('libs/msvc', 'external/build/lib')
+    build_lib_path = os.path.join(BASE_DIR, 'external', 'build', 'lib')
+    prebuilt_lib_path = os.path.join(BASE_DIR, 'libs', 'msvc')
+    if not os.path.exists(build_lib_path):
+        os.makedirs(build_lib_path)
+    shutil.copytree(prebuilt_lib_path, build_lib_path)
 
 class build_ext_compiler_check(build_ext):
     def build_extensions(self):
