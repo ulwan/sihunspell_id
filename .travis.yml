@@ -23,24 +23,28 @@ matrix:
         - PYENV_VERSION: 3.5-dev
         - CIBW_BUILD: cp35-*
         - HOMEBREW_NO_INSTALL_CLEANUP: 1
+        - HOMEBREW_NO_AUTO_UPDATE: 1
     - os: osx
       language: shell
       env:
         - PYENV_VERSION: 3.6-dev
         - CIBW_BUILD: cp36-*
         - HOMEBREW_NO_INSTALL_CLEANUP: 1
+        - HOMEBREW_NO_AUTO_UPDATE: 1
     - os: osx
       language: shell
       env:
         - PYENV_VERSION: 3.7-dev
         - CIBW_BUILD: cp37-*
         - HOMEBREW_NO_INSTALL_CLEANUP: 1
+        - HOMEBREW_NO_AUTO_UPDATE: 1
     - os: osx
       language: shell
       env:
         - PYENV_VERSION: 3.8-dev
         - CIBW_BUILD: cp38-*
         - HOMEBREW_NO_INSTALL_CLEANUP: 1
+        - HOMEBREW_NO_AUTO_UPDATE: 1
     - os: windows
       language: shell
       env:
