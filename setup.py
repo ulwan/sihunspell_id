@@ -75,8 +75,7 @@ if platform.system() == 'Linux':
 if platform.system() == 'Windows':
     build_lib_path = os.path.join(BASE_DIR, 'external', 'build', 'lib')
     prebuilt_lib_path = os.path.join(BASE_DIR, 'libs', 'msvc')
-    if not os.path.exists(build_lib_path):
-        os.makedirs(build_lib_path)
+    os.makedirs(build_lib_path, exist_ok=True)
     shutil.copytree(prebuilt_lib_path, build_lib_path)
 
 class build_ext_compiler_check(build_ext):
