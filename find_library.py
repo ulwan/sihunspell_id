@@ -171,9 +171,9 @@ def build_hunspell_package(directory, force_build=False):
             os.rename(os.path.join(lib_path, 'libhunspell-1.7.0.dylib'), expected_lib_path)
             for f in glob.glob(os.path.join(lib_path, 'libhunspell-1.7.*.dylib')):
                 os.remove(f)
-            build_lib_path = os.path.join(BASE_DIR, 'external', 'build', 'lib', 'libhunspell-1.7.dylin')
+            build_lib_path = os.path.join(BASE_DIR, 'external', 'build', 'lib', 'libhunspell-1.7.dylib')
             hunspell_so_dir = os.path.join(BASE_DIR, 'libs', 'darwin')
-            hunspell_so_path = os.path.join(hunspell_so_dir, 'libhunspell-1.7.dylin')
+            hunspell_so_path = os.path.join(hunspell_so_dir, 'libhunspell-1.7.dylib')
 
         print("Built Hunspell library files:")
         for filename in os.listdir(lib_path):
