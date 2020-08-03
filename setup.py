@@ -1,5 +1,6 @@
 import os
 import sys
+import glob
 import shutil
 import platform
 from warnings import warn
@@ -39,7 +40,14 @@ force_rebuild = '--force' in sys.argv or '-f' in sys.argv and building
 
 datatypes = ['*.aff', '*.dic', '*.pxd', '*.pyx', '*.pyd', '*.pxd', '*.so', '*.so.*', '*.dylib', '*.dylib.*', '*.lib', '*.hpp', '*.cpp']
 packages = find_packages(exclude=['*.tests', '*.tests.*', 'tests.*', 'tests'])
-packages.extend(['dictionaries', 'external.build.lib'])
+packages.append('dictionaries')
+if platform.system() == 'Linux':
+    packages.append('libs.linux')
+if platform.system() == 'Darwin':
+    packages.append('libs.darwin')
+# These aren't actually loaded -- dependencies are copied into `hunspell`
+# if platform.system() == 'Windows':
+#     packages.append('libs.msvc')
 required = [req.strip() for req in read('requirements.txt').splitlines() if req.strip()]
 required_dev = [req.strip() for req in read('requirements-dev.txt').splitlines() if req.strip()]
 required_test = [req.strip() for req in read('requirements-test.txt').splitlines() if req.strip()]
@@ -68,15 +76,6 @@ else:
             **hunspell_config
         )
     ]
-if platform.system() == 'Linux':
-    build_lib_path = os.path.join(BASE_DIR, 'external', 'build', 'lib', 'libhunspell-1.7.so.0')
-    hunspell_so_path = os.path.join(BASE_DIR, 'hunspell', 'libhunspell-1.7.so.0')
-    shutil.copyfile(build_lib_path, hunspell_so_path)
-if platform.system() == 'Windows':
-    build_lib_path = os.path.join(BASE_DIR, 'external', 'build', 'lib')
-    prebuilt_lib_path = os.path.join(BASE_DIR, 'libs', 'msvc')
-    os.makedirs(build_lib_path, exist_ok=True)
-    shutil.copytree(prebuilt_lib_path, build_lib_path)
 
 class build_ext_compiler_check(build_ext):
     def build_extensions(self):

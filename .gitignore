@@ -62,3 +62,9 @@ libs/tmp
 
 # Pytest
 .pytest_cache
+
+# Built binary locations
+libs/linux
+libs/darwin
+hunspell/libhunspell-msvc14-x64.lib
+hunspell/libhunspell-msvc14-x86.lib

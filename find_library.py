@@ -164,59 +164,65 @@ def build_hunspell_package(directory, force_build=False):
                 os.remove(f)
             if os.path.exists(os.path.join(lib_path, 'libhunspell-1.7.so')):
                 os.remove(os.path.join(lib_path, 'libhunspell-1.7.so'))
+            # Copy to our runtime location
+            build_lib_path = os.path.join(BASE_DIR, 'external', 'build', 'lib', 'libhunspell-1.7.so.0')
+            hunspell_so_dir = os.path.join(BASE_DIR, 'libs', 'linux')
+            hunspell_so_path = os.path.join(hunspell_so_dir, 'libhunspell-1.7.so.0')
         else:
             # There's a build issue where sometimes mac builds look for symlink files that don't exist later
             os.rename(os.path.join(lib_path, 'libhunspell-1.7.0.dylib'), expected_lib_path)
             for f in glob.glob(os.path.join(lib_path, 'libhunspell-1.7.*.dylib')):
                 os.remove(f)
+            build_lib_path = os.path.join(BASE_DIR, 'external', 'build', 'lib', 'libhunspell-1.7.dylin')
+            hunspell_so_dir = os.path.join(BASE_DIR, 'libs', 'darwin')
+            hunspell_so_path = os.path.join(hunspell_so_dir, 'libhunspell-1.7.dylin')
 
         print("Built Hunspell library files:")
         for filename in os.listdir(lib_path):
             if os.path.isfile(os.path.join(lib_path, filename)):
                 print('\t' + filename)
+        # Copy to our runtime location
+        if os.path.exists(hunspell_so_dir):
+            shutil.rmtree(hunspell_so_dir)
+        os.makedirs(hunspell_so_dir, exist_ok=True)
+        shutil.copyfile(build_lib_path, hunspell_so_path)
+        print("Copied binary to '{}'".format(hunspell_so_dir))
 
-    return ':'+expected_lib_name, lib_path
+    return 'hunspell-1.7', hunspell_so_dir
 
 def pkgconfig(**kw):
-    try:
-        flag_map = {'-I': 'include_dirs', '-L': 'library_dirs', '-l': 'libraries'}
-        status, response = getstatusoutput("pkg-config --libs --cflags hunspell")
-        if status != 0:
-            raise RuntimeError(response)
-        for token in response.split():
-            kw.setdefault(flag_map.get(token[:2]), []).append(token[2:])
-            if token[:2] in flag_map:
-                arg = flag_map.get(token[:2])
-                kw.setdefault(arg, []).append(token[2:])
-                kw[arg] = list(set(kw[arg]))
-            else: # throw others to extra_link_args
-                kw.setdefault('extra_link_args', []).append(token)
-                kw['extra_link_args'] = list(set(kw['extra_link_args']))
-    except RuntimeError:
+    kw['include_dirs'] = include_dirs()
+    kw['library_dirs'] = []
+    kw['libraries'] = []
+    kw['extra_link_args'] = []
+    # Need to set the linker locations
+    if platform.system() == 'Linux':
+        kw['runtime_library_dirs'] = [os.path.join('$ORIGIN', '..', 'libs', 'linux')]
+    if platform.system() == 'Darwin':
+        # See https://stackoverflow.com/questions/9795793/shared-library-dependencies-with-distutils
+        kw['extra_link_args'] = ['-Wl,-rpath,"@loader_path/../libs/darwin"']
+    if platform.system() == 'Windows':
+        # See https://stackoverflow.com/questions/62662816/how-do-i-use-the-correct-dll-files-to-enable-3rd-party-c-libraries-in-a-cython-c
+        for filename in os.listdir(os.path.join(BASE_DIR, 'libs', 'msvc')):
+            shutil.copyfile(filename, os.path.join(BASE_DIR, 'hunspell'))
+
+    if not package_found('hunspell', kw['include_dirs']):
+        # Prepare for hunspell if it's missing
+        download_and_extract('https://github.com/hunspell/hunspell/archive/v1.7.0.tar.gz',
+            os.path.join(BASE_DIR, 'external'))
         kw['include_dirs'] = include_dirs()
-        kw['library_dirs'] = []
-        kw['runtime_library_dirs'] = []
-        kw['libraries'] = []
-        kw['extra_link_args'] = []
 
-        if not package_found('hunspell', kw['include_dirs']):
-            # Prepare for hunspell if it's missing
-            download_and_extract('https://github.com/hunspell/hunspell/archive/v1.7.0.tar.gz',
-                os.path.join(BASE_DIR, 'external'))
-            kw['include_dirs'] = include_dirs()
+    if platform.system() == 'Windows':
+        _linker_name, linker_path = get_library_linker_name()
+        if not linker_path:
+            raise RuntimeError("Could not find library dependencies for Windows")
+        # These should be hardcoded to both architectures
+        kw['libraries'] = ['libhunspell-msvc14-x64', 'libhunspell-msvc14-x86']
+        kw['library_dirs'] = [linker_path]
+        kw['extra_link_args'] = ['/NODEFAULTLIB:libucrt.lib ucrt.lib']
+    else:
+        lib_name, lib_path = build_hunspell_package(os.path.join(BASE_DIR, 'external', 'hunspell-1.7.0'), True)
+        kw['library_dirs'] = [lib_path]
+        kw['libraries'] = [lib_name]
 
-        if platform.system() == 'Windows':
-            _linker_name, linker_path = get_library_linker_name()
-            if not linker_path:
-                raise RuntimeError("Could not find library dependencies for Windows")
-            # These should be hardcoded to both architectures
-            kw['libraries'] = ['libhunspell-msvc14-x64', 'libhunspell-msvc14-x86']
-            kw['library_dirs'] = [linker_path]
-            kw['extra_link_args'] = ['/NODEFAULTLIB:libucrt.lib ucrt.lib']
-        else:
-            lib_name, lib_path = build_hunspell_package(os.path.join(BASE_DIR, 'external', 'hunspell-1.7.0'), True)
-            kw['library_dirs'] = [lib_path]
-            kw['libraries'] = [lib_name]
-            kw['extra_link_args'] = ['-Wl,-rpath,"{}"'.format(lib_path)]
-    
     return kw
