@@ -158,20 +158,11 @@ def build_hunspell_package(directory, force_build=False):
             os.chdir(olddir)
 
         if platform.system() == 'Linux':
-            # There's a build issue where sometimes linux builds look for symlink files that don't exist later
-            os.rename(os.path.join(lib_path, 'libhunspell-1.7.so.0.0.1'), expected_lib_path)
-            for f in glob.glob(os.path.join(lib_path, 'libhunspell-1.7.so.*')):
-                os.remove(f)
-            # Copy to our runtime location
-            build_lib_path = os.path.join(BASE_DIR, 'external', 'build', 'lib', 'libhunspell-1.7.so')
+            build_lib_path = os.path.join(BASE_DIR, 'external', 'build', 'lib', 'libhunspell-1.7.so.0.0.1')
             hunspell_so_dir = os.path.join(BASE_DIR, 'libs', 'linux')
-            hunspell_so_path = os.path.join(hunspell_so_dir, 'libhunspell-1.7.so.0')
+            hunspell_so_path = os.path.join(hunspell_so_dir, 'libhunspell-1.7.so')
         else:
-            # There's a build issue where sometimes mac builds look for symlink files that don't exist later
-            os.rename(os.path.join(lib_path, 'libhunspell-1.7.0.dylib'), expected_lib_path)
-            for f in glob.glob(os.path.join(lib_path, 'libhunspell-1.7.*.dylib')):
-                os.remove(f)
-            build_lib_path = os.path.join(BASE_DIR, 'external', 'build', 'lib', 'libhunspell-1.7.dylib')
+            build_lib_path = os.path.join(BASE_DIR, 'external', 'build', 'lib', 'libhunspell-1.7.0.dylib')
             hunspell_so_dir = os.path.join(BASE_DIR, 'libs', 'darwin')
             hunspell_so_path = os.path.join(hunspell_so_dir, 'libhunspell-1.7.dylib')
 
