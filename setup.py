@@ -35,9 +35,9 @@ linetrace = '--linetrace' in sys.argv or '-l' in sys.argv
 building = 'build_ext' in sys.argv
 force_rebuild = '--force' in sys.argv or '-f' in sys.argv and building
 
-datatypes = ['*.aff', '*.dic', '*.pxd', '*.pyx', '*.pyd', '*.pxd', '*.so', '*.lib', '*.hpp', '*.cpp']
+datatypes = ['*.aff', '*.dic', '*.pxd', '*.pyx', '*.pyd', '*.pxd', '*.so', '*.so.*', '*.dylib', '*.dylib.*', '*.lib', '*.hpp', '*.cpp']
 packages = find_packages(exclude=['*.tests', '*.tests.*', 'tests.*', 'tests'])
-packages.extend(['dictionaries'])
+packages.extend(['dictionaries', 'external.build.lib'])
 required = [req.strip() for req in read('requirements.txt').splitlines() if req.strip()]
 required_dev = [req.strip() for req in read('requirements-dev.txt').splitlines() if req.strip()]
 required_test = [req.strip() for req in read('requirements-test.txt').splitlines() if req.strip()]
@@ -66,7 +66,6 @@ else:
             **hunspell_config
         )
     ]
-    package_data["hunspell"] = ["*.pxd"]
 
 class build_ext_compiler_check(build_ext):
     def build_extensions(self):
