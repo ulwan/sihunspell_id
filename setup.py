@@ -1,5 +1,7 @@
 import os
 import sys
+import shutil
+import platform
 from warnings import warn
 from setuptools import setup, find_packages, Extension
 from find_library import pkgconfig
@@ -66,6 +68,10 @@ else:
             **hunspell_config
         )
     ]
+if platform.system() == 'Windows':
+    if not os.path.exists('external/build/lib'):
+        os.makedirs('external/build/lib')
+    shutil.copytree('libs/msvc', 'external/build/lib')
 
 class build_ext_compiler_check(build_ext):
     def build_extensions(self):

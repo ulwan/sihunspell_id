@@ -71,7 +71,6 @@ def include_dirs():
 
 def library_dirs():
     dirs = [
-        os.path.abspath(os.path.join(BASE_DIR, 'external', 'hunspell-1.7.0', 'build', 'lib')),
         os.path.abspath(os.path.join(BASE_DIR, 'libs', 'msvc')),
     ]
     return [path for path in dirs if os.path.isdir(path)]
@@ -157,6 +156,17 @@ def build_hunspell_package(directory, force_build=False):
             run_proc_delay_print('make', 'install')
         finally:
             os.chdir(olddir)
+
+        if platform.system() == 'Linux':
+            # There's a build issue where sometimes linux builds look for symlink files that don't exist later
+            os.rename(os.path.join(lib_path, 'libhunspell-1.7.so.0.0.1'), expected_lib_path)
+            for f in glob.glob(os.path.join(lib_path, 'libhunspell-1.7.so.*')):
+                os.remove(f)
+        else:
+            # There's a build issue where sometimes mac builds look for symlink files that don't exist later
+            os.rename(os.path.join(lib_path, 'libhunspell-1.7.0.dylib'), expected_lib_path)
+            for f in glob.glob(os.path.join(lib_path, 'libhunspell-1.7.*.dylib')):
+                os.remove(f)
 
         print("Built Hunspell library files:")
         for filename in os.listdir(lib_path):
