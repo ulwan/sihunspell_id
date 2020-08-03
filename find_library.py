@@ -202,7 +202,7 @@ def pkgconfig(**kw):
     if platform.system() == 'Windows':
         # See https://stackoverflow.com/questions/62662816/how-do-i-use-the-correct-dll-files-to-enable-3rd-party-c-libraries-in-a-cython-c
         for filename in os.listdir(os.path.join(BASE_DIR, 'libs', 'msvc')):
-            shutil.copyfile(os.path.join(BASE_DIR, 'libs', 'msvc', filename), os.path.join(BASE_DIR, 'hunspell'))
+            shutil.copyfile(os.path.join(BASE_DIR, 'libs', 'msvc', filename), os.path.join(BASE_DIR, 'hunspell', filename))
 
     if not package_found('hunspell', kw['include_dirs']):
         # Prepare for hunspell if it's missing
