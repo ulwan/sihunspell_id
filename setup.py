@@ -5,7 +5,7 @@ import shutil
 import platform
 from warnings import warn
 from setuptools import setup, find_packages, Extension
-from find_library import pkgconfig
+from build_hunspell import pkgconfig
 from collections import defaultdict
 
 BASE_DIR = os.path.abspath(os.path.dirname(__file__))
@@ -52,7 +52,8 @@ required = [req.strip() for req in read('requirements.txt').splitlines() if req.
 required_dev = [req.strip() for req in read('requirements-dev.txt').splitlines() if req.strip()]
 required_test = [req.strip() for req in read('requirements-test.txt').splitlines() if req.strip()]
 package_data = {'' : datatypes}
-hunspell_config = pkgconfig(language='c++')
+# This generates a full build of hunspell and is slow...
+hunspell_config = pkgconfig()
 
 if building:
     if (profiling or linetrace) and not force_rebuild:
