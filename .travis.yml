@@ -86,8 +86,6 @@ before_install:
         osx)
           brew install autoconf automake libtool gettext
           brew link gettext --force
-          ## Hack to fix mac builds on XCode 11: https://github.com/blatinier/pyhunspell/issues/33
-          ln -s /Applications/Xcode.app/Contents/Developer/Platforms/MacOSX.platform/Developer/SDKs/MacOSX.sdk /Applications/Xcode.app/Contents/Developer/Platforms/MacOSX.platform/Developer/SDKs/MacOSX10.14.sdk
           eval "$(pyenv init -)"
           pyenv install $PYENV_VERSION
           pyenv global $PYENV_VERSION
