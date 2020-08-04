@@ -45,13 +45,14 @@ matrix:
         - CIBW_BUILD: cp38-*
         - HOMEBREW_NO_INSTALL_CLEANUP: 1
         - HOMEBREW_NO_AUTO_UPDATE: 1
-    - os: windows
-      language: shell
-      env:
-        - PYENV_VERSION: 3.5.4
-        - PYENV_PATH: "/c/Python35"
-        - CIBW_BUILD: cp35-*
-        - MSBUILD_PATH: "C:\\Program Files (x86)\\Microsoft Visual Studio\\2019\\BuildTools\\MSBuild\\Current\\Bin"
+    # We don't support 3.5 for windows because the Visual Studio build chain is vs140 and not vs142 and not worth the extra effort as it's close to sunset
+    # - os: windows
+    #   language: shell
+    #   env:
+    #     - PYENV_VERSION: 3.5.4
+    #     - PYENV_PATH: "/c/Python35"
+    #     - CIBW_BUILD: cp35-*
+    #     - MSBUILD_PATH: "C:\\Program Files (x86)\\Microsoft Visual Studio\\2019\\BuildTools\\MSBuild\\Current\\Bin"
     - os: windows
       language: shell
       env:
