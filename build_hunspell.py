@@ -47,9 +47,11 @@ def build_hunspell_package(directory, force_build=False):
 
     if platform.system() == 'Linux':
         hunspell_library_name = 'libhunspell-1.7.so.0'
+        export_lib_name = ':'+hunspell_library_name
         build_lib_path = os.path.join(BASE_DIR, 'external', 'build', 'lib', 'libhunspell-1.7.so.0.0.1')
     else: # OSX
         hunspell_library_name = 'libhunspell-1.7.0.dylib'
+        export_lib_name = 'hunspell-1.7.0.dylib'
         build_lib_path = os.path.join(BASE_DIR, 'external', 'build', 'lib', 'libhunspell-1.7.0.dylib')
     hunspell_so_path = os.path.join(hunspell_so_dir, hunspell_library_name)
 
@@ -75,7 +77,7 @@ def build_hunspell_package(directory, force_build=False):
         shutil.copyfile(build_lib_path, hunspell_so_path)
         print("Copied binary to '{}'".format(hunspell_so_path))
 
-    return ':'+hunspell_library_name, hunspell_so_dir
+    return export_lib_name, hunspell_so_dir
 
 def pkgconfig(**kw):
     kw['include_dirs'] = include_dirs()
@@ -89,7 +91,6 @@ def pkgconfig(**kw):
     if platform.system() == 'Darwin':
         # See https://stackoverflow.com/questions/9795793/shared-library-dependencies-with-distutils
         kw['extra_link_args'] = ['-Wl,-rpath,"@loader_path/']
-        kw['runtime_library_dirs'] = [os.path.join(BASE_DIR, 'hunspell')]
     # If changing to a dynamic link dependency
     # if platform.system() == 'Windows':
     #     # See https://stackoverflow.com/questions/62662816/how-do-i-use-the-correct-dll-files-to-enable-3rd-party-c-libraries-in-a-cython-c
