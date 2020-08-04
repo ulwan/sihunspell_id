@@ -51,7 +51,7 @@ def build_hunspell_package(directory, force_build=False):
         build_lib_path = os.path.join(BASE_DIR, 'external', 'build', 'lib', 'libhunspell-1.7.so.0.0.1')
     else: # OSX
         hunspell_library_name = 'libhunspell-1.7.0.dylib'
-        export_lib_name = 'hunspell-1.7.0.dylib'
+        export_lib_name = 'hunspell-1.7.0'
         build_lib_path = os.path.join(BASE_DIR, 'external', 'build', 'lib', 'libhunspell-1.7.0.dylib')
     hunspell_so_path = os.path.join(hunspell_so_dir, hunspell_library_name)
 
