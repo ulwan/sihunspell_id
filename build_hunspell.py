@@ -46,14 +46,15 @@ def build_hunspell_package(directory, force_build=False):
         os.makedirs(tmp_lib_path)
 
     if platform.system() == 'Linux':
-        expected_lib_name = 'libhunspell-1.7.so'
-        expected_lib_path = os.path.join(lib_path, expected_lib_name)
+        hunspell_library_name = 'libhunspell-1.7.so.0'
+        build_lib_path = os.path.join(BASE_DIR, 'external', 'build', 'lib', 'libhunspell-1.7.so.0.0.1')
     else: # OSX
-        expected_lib_name = 'libhunspell-1.7.dylib'
-        expected_lib_path = os.path.join(lib_path, expected_lib_name)
+        hunspell_library_name = 'libhunspell-1.7.0.dylib'
+        build_lib_path = os.path.join(BASE_DIR, 'external', 'build', 'lib', 'libhunspell-1.7.0.dylib')
+    hunspell_so_path = os.path.join(hunspell_so_dir, hunspell_library_name)
 
     olddir = os.getcwd()
-    if force_build or not os.contentspath.exists(expected_lib_path):
+    if force_build or not os.contentspath.exists(build_lib_path):
         if os.path.exists(lib_path):
             shutil.rmtree(lib_path)
         try:
@@ -65,15 +66,6 @@ def build_hunspell_package(directory, force_build=False):
         finally:
             os.chdir(olddir)
 
-        if platform.system() == 'Linux':
-            build_lib_path = os.path.join(BASE_DIR, 'external', 'build', 'lib', 'libhunspell-1.7.so.0.0.1')
-            # This is the filename that the binding looks for at runtime
-            hunspell_library_name = 'libhunspell-1.7.so.0'
-        else:
-            build_lib_path = os.path.join(BASE_DIR, 'external', 'build', 'lib', 'libhunspell-1.7.0.dylib')
-            hunspell_library_name = 'libhunspell-1.7.0.dylib'
-        hunspell_so_path = os.path.join(hunspell_so_dir, hunspell_library_name)
-
         print("Built Hunspell library files:")
         for filename in os.listdir(lib_path):
             if os.path.isfile(os.path.join(lib_path, filename)):
@@ -81,7 +73,7 @@ def build_hunspell_package(directory, force_build=False):
         # Copy to our runtime location
         os.makedirs(hunspell_so_dir, exist_ok=True)
         shutil.copyfile(build_lib_path, hunspell_so_path)
-        print("Copied binary to '{}'".format(hunspell_so_dir))
+        print("Copied binary to '{}'".format(hunspell_so_path))
 
     return ':'+hunspell_library_name, hunspell_so_dir
 
@@ -112,7 +104,7 @@ def pkgconfig(**kw):
     if platform.system() == 'Windows':
         # These should be hardcoded to both architectures
         kw['libraries'] = ['libhunspell-msvc14-x64', 'libhunspell-msvc14-x86']
-        kw['library_dirs'] = [os.path.dirname(BASE_DIR, 'libs', 'msvc')]
+        kw['library_dirs'] = [os.path.join(BASE_DIR, 'libs', 'msvc')]
         kw['extra_link_args'] = ['/NODEFAULTLIB:libucrt.lib ucrt.lib']
     else:
         lib_name, lib_path = build_hunspell_package(os.path.join(BASE_DIR, 'external', 'hunspell-1.7.0'), True)
