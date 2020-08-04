@@ -89,6 +89,7 @@ def pkgconfig(**kw):
     if platform.system() == 'Darwin':
         # See https://stackoverflow.com/questions/9795793/shared-library-dependencies-with-distutils
         kw['extra_link_args'] = ['-Wl,-rpath,"@loader_path/']
+        kw['runtime_library_dirs'] = [os.path.join(BASE_DIR, 'hunspell')]
     # If changing to a dynamic link dependency
     # if platform.system() == 'Windows':
     #     # See https://stackoverflow.com/questions/62662816/how-do-i-use-the-correct-dll-files-to-enable-3rd-party-c-libraries-in-a-cython-c
