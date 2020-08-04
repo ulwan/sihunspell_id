@@ -205,7 +205,7 @@ cdef class HunspellWrap(object):
         if hunspell_data_dir is None:
             hunspell_data_dir = os.environ.get("HUNSPELL_DATA")
         if hunspell_data_dir is None:
-            hunspell_data_dir = os.path.join(os.path.dirname(__file__), '..', 'dictionaries')
+            hunspell_data_dir = os.path.join(os.path.dirname(__file__), 'dictionaries')
         if system_encoding is None:
             system_encoding = os.environ.get("HUNSPELL_PATH_ENCODING")
         if system_encoding is None:
