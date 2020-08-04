@@ -14,7 +14,7 @@ Install Visual Studios 2019.
 Run find_library.py to download windows usuable version of hunspell. This will
 populate the 'external' directory.
 
-WithVisual Studio, open 'external\hunspell-1.7.0\msvc\Hunspell.sln'.
+With Visual Studio, open 'external\hunspell-1.7.0\msvc\Hunspell.sln'.
 Allow visual studio to upgrade the solution if prompted.
 
 Then right click on libhunspell from the solution explorer and choose 'properties'.
