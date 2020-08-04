@@ -14,6 +14,7 @@ from contextlib import contextmanager
 from cacheman.cacher import get_cache_manager
 from hunspell import Hunspell, HunspellFilePathError
 
+
 DICT_DIR = os.path.join(os.path.dirname(__file__), '..', 'hunspell', 'dictionaries')
 
 
