@@ -105,6 +105,13 @@ Like stemming but return morphological analysis of the input instead.
 h.analyze('permanently') # (' st:permanent fl:Y',)
 ```
 
+#### Generate
+
+Generate methods are *NOT* provided at this time due to the 1.7.0 build not producing
+any results for any inputs, included the documented one. If this is fixed or someone
+identifies the issue in the call pattern this will be added to the library in the
+future.
+
 ### Bulk Requests
 
 You can also request bulk actions against Hunspell. This will trigger a threaded

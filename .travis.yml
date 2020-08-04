@@ -140,3 +140,4 @@ env:
     - TWINE_USERNAME: __token__
     # Needed to ensure the cibuildwheels generate new binaries
     - CYHUNSPELL_FORCE_BUILD: 1
+    - CIBW_ENVIRONMENT: "CYHUNSPELL_FORCE_BUILD=1"
