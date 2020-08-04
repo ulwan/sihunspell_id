@@ -114,3 +114,10 @@ def pkgconfig(**kw):
         kw['libraries'] = [lib_name]
 
     return kw
+
+def repair_darwin_link_dep_path():
+    # Needed for darwin generated SO files to correctly look in the @loader_path for shared dependencies
+    build_lib_path = os.path.join(BASE_DIR, 'external', 'build', 'lib', 'libhunspell-1.7.0.dylib')
+    for parent_lib_path in glob.glob(os.path.join(BASE_DIR, 'hunspell', '*.so')):
+        run_proc_delay_print('install_name_tool', '-change', build_lib_path, '@loader_path/libhunspell-1.7.0.dylib', parent_lib_path)
+        print("Changed lib path '{}' to '@loader_path/libhunspell-1.7.0.dylib' in {}".format(build_lib_path, parent_lib_path))
