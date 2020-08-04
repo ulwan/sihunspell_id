@@ -21,9 +21,9 @@ Then right click on libhunspell from the solution explorer and choose 'propertie
 Change to Release Configuration
 Under 'C/C++ -> All Options' make the following changes:
 * Runtime Library -> Multi-Threaded (/MT)
-# Needed for python 3.5
+# Needed for python 3.5 to build against vs140 from this vs142 build
 * Whole program Optimization -> No
-VS2019->Properties->C/C++->Command Line add ‘-d2FH4-‘
+VS2019->Properties->C/C++->Command Line add ‘-d2FH4- /Zc:sizedDealloc-‘
 
 Then click on Configuration Manager in upper right corner.
 Uncheck 'Build' checkboxes for 'hunspell' and 'testparser' (or delete those options)
