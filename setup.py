@@ -17,7 +17,7 @@ for compiler, args in [
     BUILD_ARGS[compiler] = args
 
 def cleanup_pycs():
-    file_tree = os.walk(os.path.join(BASE_DIR, 'cyhunspell'))
+    file_tree = os.walk(os.path.join(BASE_DIR, 'hunspell'))
     to_delete = []
     for root, directory, file_list in file_tree:
         if len(file_list):
@@ -36,7 +36,6 @@ def read(fname):
 
 profiling = '--profile' in sys.argv or '-p' in sys.argv
 linetrace = '--linetrace' in sys.argv or '-l' in sys.argv
-building = 'build' in sys.argv or 'develop' in sys.argv
 building_ext = 'build_ext' in sys.argv
 force_rebuild = '--force' in sys.argv or '-f' in sys.argv and building
 
@@ -61,7 +60,7 @@ if building_ext:
             **pkgconfig()
         )
     ], force=force_rebuild, compiler_directives={'language_level' : "3"})
-elif building:
+else:
     from setuptools.command.build_ext import build_ext
     ext_modules = [
         Extension(
@@ -70,9 +69,6 @@ elif building:
             **pkgconfig()
         )
     ]
-else:
-    from setuptools.command.build_ext import build_ext
-    ext_modules = []
 
 class build_ext_compiler_check(build_ext):
     def build_extensions(self):
@@ -93,11 +89,16 @@ class build_darwin_fix(build):
         if platform.system() == 'Darwin':
             repair_darwin_link_dep_path()
 
-VERSION = read(os.path.join(BASE_DIR, 'VERSION')).strip()
+def version():
+    with open(os.path.join(BASE_DIR, 'hunspell', '_version.py'), 'r') as ver:
+        for line in ver.readlines():
+            if line.startswith('__version__ ='):
+                return line.split(' = ')[-1].strip()[1:-1]
+    raise ValueError('No version found in hunspell/_version.py')
 
 setup(
     name='cyhunspell',
-    version=VERSION,
+    version=version(),
     author='Matthew Seal',
     author_email='mseal007@gmail.com',
     description='A wrapper on hunspell for use in Python',
@@ -115,7 +116,7 @@ setup(
     test_suite='tests',
     zip_safe=False,
     url='https://github.com/MSeal/cython_hunspell',
-    download_url='https://github.com/MSeal/cython_hunspell/tarball/v' + VERSION,
+    download_url='https://github.com/MSeal/cython_hunspell/tarball/v' + version(),
     package_data=package_data,
     keywords=['hunspell', 'spelling', 'correction'],
     classifiers=[

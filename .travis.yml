@@ -111,7 +111,7 @@ install:
   - pip install cibuildwheel
   - touch .cibuildwheel
   - python setup.py build
-  - pip install .
+  - CYHUNSPELL_FORCE_BUILD=0 pip install .
   # Nuke these to make sure our tests after this point don't use temporary shared libraries
   - rm -rf build
   - rm -rf external/build
@@ -136,4 +136,6 @@ notifications:
 
 env:
   global:
-    - TWINE_USERNAME=__token__
+    - TWINE_USERNAME: __token__
+    # Needed to ensure the cibuildwheels generate new binaries
+    - CYHUNSPELL_FORCE_BUILD: 1

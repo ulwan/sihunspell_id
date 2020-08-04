@@ -1,4 +1,3 @@
-include VERSION
 include README.md
 include LICENSE
 include HUNSPELL_LICENSE_LESSER

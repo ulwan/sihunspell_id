@@ -56,7 +56,7 @@ def build_hunspell_package(directory, force_build=False):
     hunspell_so_path = os.path.join(hunspell_so_dir, hunspell_library_name)
 
     olddir = os.getcwd()
-    if force_build or not os.contentspath.exists(build_lib_path):
+    if force_build or not os.path.exists(hunspell_so_path):
         if os.path.exists(lib_path):
             shutil.rmtree(lib_path)
         try:
@@ -109,7 +109,10 @@ def pkgconfig(**kw):
         kw['library_dirs'] = [os.path.join(BASE_DIR, 'libs', 'msvc')]
         kw['extra_link_args'] = ['/NODEFAULTLIB:libucrt.lib ucrt.lib']
     else:
-        lib_name, lib_path = build_hunspell_package(os.path.join(BASE_DIR, 'external', 'hunspell-1.7.0'), True)
+        force_build = os.environ.get('CYHUNSPELL_FORCE_BUILD', False)
+        if force_build == '0' or force_build == 0:
+            force_build = False
+        lib_name, lib_path = build_hunspell_package(os.path.join(BASE_DIR, 'external', 'hunspell-1.7.0'), force_build)
         kw['library_dirs'] = [lib_path]
         kw['libraries'] = [lib_name]
 
