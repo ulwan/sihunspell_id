@@ -43,7 +43,7 @@ cdef action_type action_to_enum(basestring action):
     elif action == 'suffix_suggest':
         return suffix_suggest
     else:
-        raise ValueError(f"Unexpected action {action} for hunspell")
+        raise ValueError("Unexpected action {} for hunspell".format(action))
 
 cdef basestring action_to_string(action_type action_e):
     if action_e == add:
@@ -61,7 +61,7 @@ cdef basestring action_to_string(action_type action_e):
     elif action_e == suffix_suggest:
         return 'suffix_suggest'
     else:
-        raise ValueError(f"Unexpected action {action_e} for hunspell")
+        raise ValueError("Unexpected action {} for hunspell".format(action_e))
 
 def valid_encoding(basestring encoding):
     try:
@@ -283,7 +283,7 @@ cdef class HunspellWrap(object):
         elif action_e == suffix_suggest:
             return self._suffix_cache
         else:
-            raise ValueError(f"Unexpected action {action_to_string(action_e)} for caching")
+            raise ValueError("Unexpected action {} for caching".format(action_to_string(action_e)))
 
     def add_dic(self, basestring dpath, basestring key=None):
         # Python load extra dictionaries
@@ -424,7 +424,7 @@ cdef class HunspellWrap(object):
             elif action_e == suffix_suggest:
                 count = self._cxx_hunspell.suffix_suggest(&s_list, c_word)
             else:
-                raise ValueError(f"Unexpected tuple action {action_to_string(action_e)} for hunspell")
+                raise ValueError("Unexpected tuple action {} for hunspell".format(action_to_string(action_e)))
 
             results_list = []
             for i from 0 <= i < count:

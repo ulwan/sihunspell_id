@@ -36,7 +36,8 @@ def read(fname):
 
 profiling = '--profile' in sys.argv or '-p' in sys.argv
 linetrace = '--linetrace' in sys.argv or '-l' in sys.argv
-building = 'build_ext' in sys.argv
+building = 'build' in sys.argv or 'develop' in sys.argv
+building_ext = 'build_ext' in sys.argv
 force_rebuild = '--force' in sys.argv or '-f' in sys.argv and building
 
 datatypes = ['*.aff', '*.dic', '*.pxd', '*.pyx', '*.pyd', '*.pxd', '*.so', '*.so.*', '*.dylib', '*.dylib.*', '*.lib', '*.hpp', '*.cpp']
@@ -46,10 +47,8 @@ required = [req.strip() for req in read('requirements.txt').splitlines() if req.
 required_dev = [req.strip() for req in read('requirements-dev.txt').splitlines() if req.strip()]
 required_test = [req.strip() for req in read('requirements-test.txt').splitlines() if req.strip()]
 package_data = {'' : datatypes}
-# This generates a full build of hunspell and is slow...
-hunspell_config = pkgconfig()
 
-if building:
+if building_ext:
     if (profiling or linetrace) and not force_rebuild:
         warn("WARNING: profiling or linetracing specified without forced rebuild")
     from Cython.Build import cythonize
@@ -59,18 +58,21 @@ if building:
         Extension(
             'hunspell.hunspell',
             [os.path.join('hunspell', 'hunspell.pyx')],
-            **hunspell_config
+            **pkgconfig()
         )
     ], force=force_rebuild, compiler_directives={'language_level' : "3"})
-else:
+elif building:
     from setuptools.command.build_ext import build_ext
     ext_modules = [
         Extension(
             'hunspell.hunspell',
             [os.path.join('hunspell', 'hunspell.cpp')],
-            **hunspell_config
+            **pkgconfig()
         )
     ]
+else:
+    from setuptools.command.build_ext import build_ext
+    ext_modules = []
 
 class build_ext_compiler_check(build_ext):
     def build_extensions(self):
