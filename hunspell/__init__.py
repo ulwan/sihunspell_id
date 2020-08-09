@@ -1,3 +1,4 @@
 __all__ = ['hunspell']
 
-from .hunspell import HunspellWrap as Hunspell, HunspellFilePathError
+from ._version import __version__  # noqa: F401
+from .hunspell import HunspellWrap as Hunspell, HunspellFilePathError  # noqa: F401

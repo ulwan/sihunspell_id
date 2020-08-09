@@ -12,6 +12,7 @@ bin/
 build/
 develop-eggs/
 dist/
+wheelhouse/
 eggs/
 lib/
 lib64/
@@ -61,3 +62,10 @@ libs/tmp
 
 # Pytest
 .pytest_cache
+
+# Built binary locations
+libs/linux
+hunspell/libhunspell-1.7.so.0
+hunspell/libhunspell-1.7.0.dylib
+hunspell/libhunspell-msvc14-x64.lib
+hunspell/libhunspell-msvc14-x86.lib

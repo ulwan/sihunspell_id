@@ -1,3 +1,14 @@
+# 2.0.0
+- Removed support for python 2
+- Updated to hunspell 1.7.0
+- Added support for `suffix_suggest`
+- Added support for `analyze`
+- Added support for `add_dic`
+- Added support for `remove`
+- Added support for `add_with_affix`
+- Updated builds to be wheel based
+- Moved dictionaries inside hunspell directory structure
+
 # 1.3.3
 - Mapped the `add` function to the cython wrapper class.
 

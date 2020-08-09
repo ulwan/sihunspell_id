@@ -1,19 +1,23 @@
 import os
 import sys
+import glob
+import shutil
+import platform
 from warnings import warn
 from setuptools import setup, find_packages, Extension
-from find_library import pkgconfig
+from distutils.command.build import build
+from build_hunspell import pkgconfig, repair_darwin_link_dep_path, clean_hunspell_build_dir
 from collections import defaultdict
 
 BASE_DIR = os.path.abspath(os.path.dirname(__file__))
 BUILD_ARGS = defaultdict(lambda: ['-O3', '-g0'])
 for compiler, args in [
-        ('msvc', ['/EHsc', '/DHUNSPELL_STATIC']),
+        ('msvc', ['/EHsc', '/MD', '/DHUNSPELL_STATIC']),
         ('gcc', ['-O3', '-g0', '-DHUNSPELL_STATIC'])]:
     BUILD_ARGS[compiler] = args
 
 def cleanup_pycs():
-    file_tree = os.walk(os.path.join(BASE_DIR, 'cyhunspell'))
+    file_tree = os.walk(os.path.join(BASE_DIR, 'hunspell'))
     to_delete = []
     for root, directory, file_list in file_tree:
         if len(file_list):
@@ -26,26 +30,24 @@ def cleanup_pycs():
         except:
             pass
 
-python_2 = sys.version_info[0] == 2
 def read(fname):
-    with open(fname, 'rU' if python_2 else 'r') as fhandle:
+    with open(fname, 'r') as fhandle:
         return fhandle.read()
 
 profiling = '--profile' in sys.argv or '-p' in sys.argv
 linetrace = '--linetrace' in sys.argv or '-l' in sys.argv
-building = 'build_ext' in sys.argv
+building_ext = 'build_ext' in sys.argv
 force_rebuild = '--force' in sys.argv or '-f' in sys.argv and building
 
-datatypes = ['*.aff', '*.dic', '*.pxd', '*.pyx', '*.pyd', '*.pxd', '*.so', '*.lib', '*.hpp', '*.cpp']
+datatypes = ['*.aff', '*.dic', '*.pxd', '*.pyx', '*.pyd', '*.pxd', '*.so', '*.so.*', '*.dylib', '*.dylib.*', '*.lib', '*.hpp', '*.cpp']
 packages = find_packages(exclude=['*.tests', '*.tests.*', 'tests.*', 'tests'])
-packages.extend(['dictionaries', 'libs.msvc'])
+packages.append('hunspell.dictionaries')
 required = [req.strip() for req in read('requirements.txt').splitlines() if req.strip()]
 required_dev = [req.strip() for req in read('requirements-dev.txt').splitlines() if req.strip()]
 required_test = [req.strip() for req in read('requirements-test.txt').splitlines() if req.strip()]
 package_data = {'' : datatypes}
-hunspell_config = pkgconfig('hunspell', language='c++')
 
-if building:
+if building_ext:
     if (profiling or linetrace) and not force_rebuild:
         warn("WARNING: profiling or linetracing specified without forced rebuild")
     from Cython.Build import cythonize
@@ -55,19 +57,18 @@ if building:
         Extension(
             'hunspell.hunspell',
             [os.path.join('hunspell', 'hunspell.pyx')],
-            **hunspell_config
+            **pkgconfig()
         )
-    ], force=force_rebuild)
+    ], force=force_rebuild, compiler_directives={'language_level' : "3"})
 else:
     from setuptools.command.build_ext import build_ext
     ext_modules = [
         Extension(
             'hunspell.hunspell',
             [os.path.join('hunspell', 'hunspell.cpp')],
-            **hunspell_config
+            **pkgconfig()
         )
     ]
-    package_data["hunspell"] = ["*.pxd"]
 
 class build_ext_compiler_check(build_ext):
     def build_extensions(self):
@@ -81,11 +82,31 @@ class build_ext_compiler_check(build_ext):
         cleanup_pycs()
         build_ext.run(self)
 
-VERSION = read(os.path.join(BASE_DIR, 'VERSION')).strip()
+def clean_build_dir():
+    build_path = os.path.join(BASE_DIR, 'build')
+    if os.path.exists(build_path):
+        shutil.rmtree(build_path)
+
+class build_darwin_fix(build):
+    def run(self):
+        build.run(self)
+        # OSX build a shared dependency with an absolute path to the hunspell dylib. This fixes that
+        if platform.system() == 'Darwin':
+            repair_darwin_link_dep_path()
+            # cibuildwheel tries to manipulate the libraries in the build directory, so clean them up
+            clean_hunspell_build_dir()
+            clean_build_dir()
+
+def version():
+    with open(os.path.join(BASE_DIR, 'hunspell', '_version.py'), 'r') as ver:
+        for line in ver.readlines():
+            if line.startswith('__version__ ='):
+                return line.split(' = ')[-1].strip()[1:-1]
+    raise ValueError('No version found in hunspell/_version.py')
 
 setup(
-    name='CyHunspell',
-    version=VERSION,
+    name='cyhunspell',
+    version=version(),
     author='Matthew Seal',
     author_email='mseal007@gmail.com',
     description='A wrapper on hunspell for use in Python',
@@ -93,26 +114,24 @@ setup(
     long_description_content_type='text/markdown',
     ext_modules=ext_modules,
     install_requires=required,
-    cmdclass={ 'build_ext': build_ext_compiler_check },
+    cmdclass={ 'build_ext': build_ext_compiler_check, 'build': build_darwin_fix },
     extras_require={
         'dev': required_dev,
         'test': required_test,
     },
     license='MIT + MPL 1.1/GPL 2.0/LGPL 2.1',
     packages=packages,
-    scripts=['find_library.py', 'tar_download.py'],
     test_suite='tests',
     zip_safe=False,
     url='https://github.com/MSeal/cython_hunspell',
-    download_url='https://github.com/MSeal/cython_hunspell/tarball/v' + VERSION,
+    download_url='https://github.com/MSeal/cython_hunspell/tarball/v' + version(),
     package_data=package_data,
     keywords=['hunspell', 'spelling', 'correction'],
     classifiers=[
-        'Development Status :: 4 - Beta',
+        'Development Status :: 5 - Production/Stable',
         'Topic :: Utilities',
         'License :: OSI Approved :: MIT License',
         'Natural Language :: English',
-        'Programming Language :: Python :: 2.7',
         'Programming Language :: Python :: 3'
     ]
 )
