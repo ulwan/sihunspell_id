@@ -118,11 +118,6 @@ def pkgconfig(**kw):
 
     return kw
 
-def clean_hunspell_build_dir():
-    build_path = os.path.join(BASE_DIR, 'external', 'build')
-    if os.path.exists(build_path):
-        shutil.rmtree(build_path)
-
 def repair_darwin_link_dep_path():
     # Needed for darwin generated SO files to correctly look in the @loader_path for shared dependencies
     build_lib_path = os.path.join(BASE_DIR, 'external', 'build', 'lib', 'libhunspell-1.7.0.dylib')

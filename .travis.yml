@@ -109,6 +109,8 @@ script:
 - rm hunspell/*.dylib || true
 - rm hunspell/*.pyd || true
 - python -m cibuildwheel --output-dir wheelhouse
+# Print wheel contents
+- python -m zipfile --list dist/*
 - ls wheelhouse
 - if [ "${TRAVIS_TAG:-}" != "" ]; then python -m twine upload --skip-existing wheelhouse/*;
   fi
