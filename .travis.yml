@@ -118,14 +118,8 @@ notifications:
     - mseal007@gmail.com
     on_success: change
     on_failure: always
-deploy:
-  provider: pypi
-  username: __token__
-  on:
-    tags: true
-  password:
-    secure: CAg9KSq5QBVpSqllD+E+aA/4eeD9oq5r3bsC72RjaeeUHdhVJCRGva0ijycDLsA8P9y72jyndMGfl2/vfutX4JPdA9FWAMwaKAL4VgKuoZlgAxp7Zo8wjeERRll4Tef3VJao/WryAumutQO7/5T+J4xDb6Turz6xAaOdeyVmgUhtg50FSb30POpKCh9LtcOZRnGjrodKB+oQDfGXAdbFdqn5ud7Q2gw9PAhUfd2tyK1dA4zM0DC5eU1d4Fyqk5zATmMDmnvkDYio9RXLN/4FD6sc7ZnknpM7zjBpK2MlmZNQ6tNSFXh4exhHRBIsYpthwwvIit87K9MZB7FZC2eP8UrTsCXOD9Y9JRD7icGYrM0A8WeezFATvbkkVIHmkN1SGQm9uPvIrYMg/ZulMLhx2KBqKwg1nwVXL+QN1O3jJL23WI3aqHDSGv2HaKI18/e2MqLNeM/pdOZMbRYqj3svq2aeDPdbIZKmO583buRsleH7Kw8WCUho/AifyodnywYp3wSHGn/ixb/xE79aSCuuCaPKaWIFf/sJGHSyP1+rZOvgazwolQ35aSSdJsPhg5Rc49Tc5nLMf5UqrnY42EGMdpdxF/EGTVg91eZRuz2+cTeV6Jq8rGKIqMQviLn46FyM2yuRcjdrozu/Gyj1qMfKxoqFode57Yo0HFDLO287lQc=
 env:
   global:
+  - TWINE_USERNAME: __token__
   - CYHUNSPELL_FORCE_BUILD: 1
   - CIBW_ENVIRONMENT: CYHUNSPELL_FORCE_BUILD=1
