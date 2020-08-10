@@ -111,7 +111,7 @@ script:
 - python -m cibuildwheel --output-dir wheelhouse
 - ls wheelhouse
 # Print wheel contents
-- for i in wheelhouse/*.whl; do echo "Listing file inside $i"; python -m zipfile --list $i; done
+- for i in wheelhouse/*.whl; do echo "Listing file inside $i"; python -m zipfile -l $i; done
 - if [ "${TRAVIS_TAG:-}" != "" ]; then python -m twine upload --skip-existing wheelhouse/*;
   fi
 notifications:
