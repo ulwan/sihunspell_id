@@ -108,7 +108,7 @@ script:
 - rm hunspell/*.so || true
 - rm hunspell/*.dylib || true
 - rm hunspell/*.pyd || true
-- python -m cibuildwheel --output-dir wheelhouse
+- '[[ $TRAVIS_OS_NAME = "osx" ]] && SKIP_LIB_PATH_REWRITE=1 || SKIP_LIB_PATH_REWRITE=0 && python -m cibuildwheel --output-dir wheelhouse'
 - ls wheelhouse
 # Print wheel contents
 - for i in wheelhouse/*.whl; do echo "Listing file inside $i"; python -m zipfile -l $i; done
