@@ -15,7 +15,6 @@ from distutils.sysconfig import get_python_lib
 from subprocess import getstatusoutput
 
 BASE_DIR = os.path.abspath(os.path.dirname(__file__))
-SKIP_LIB_REWRITE = int(os.environ.get('SKIP_LIB_PATH_REWRITE', 0)) == 1
 
 def include_dirs():
     return [
@@ -51,10 +50,7 @@ def build_hunspell_package(directory, force_build=False):
         hunspell_library_name = 'libhunspell-1.7.0.dylib'
         export_lib_name = 'hunspell-1.7.0'
         build_lib_path = os.path.join(BASE_DIR, 'external', 'build', 'lib', 'libhunspell-1.7.0.dylib')
-    if SKIP_LIB_REWRITE:
-        hunspell_so_path = build_lib_path
-    else:
-        hunspell_so_path = os.path.join(hunspell_so_dir, hunspell_library_name)
+    hunspell_so_path = os.path.join(hunspell_so_dir, hunspell_library_name)
 
     olddir = os.getcwd()
     if force_build or not os.path.exists(hunspell_so_path):
@@ -73,11 +69,10 @@ def build_hunspell_package(directory, force_build=False):
         for filename in os.listdir(lib_path):
             if os.path.isfile(os.path.join(lib_path, filename)):
                 print('\t' + filename)
-        if not SKIP_LIB_REWRITE:
-            # Copy to our runtime location
-            os.makedirs(hunspell_so_dir, exist_ok=True)
-            shutil.copyfile(build_lib_path, hunspell_so_path)
-            print("Copied binary to '{}'".format(hunspell_so_path))
+        # Copy to our runtime location
+        os.makedirs(hunspell_so_dir, exist_ok=True)
+        shutil.copyfile(build_lib_path, hunspell_so_path)
+        print("Copied binary to '{}'".format(hunspell_so_path))
 
     return export_lib_name, hunspell_so_dir
 
@@ -121,11 +116,28 @@ def pkgconfig(**kw):
     return kw
 
 def repair_darwin_link_dep_path():
-    if not SKIP_LIB_REWRITE:
-        # Needed for darwin generated SO files to correctly look in the @loader_path for shared dependencies
-        build_lib_path = os.path.join(BASE_DIR, 'external', 'build', 'lib', 'libhunspell-1.7.0.dylib')
-        for parent_lib_path in glob.glob(os.path.join(BASE_DIR, 'hunspell', '*.so')):
-            run_proc_delay_print('install_name_tool', '-change', build_lib_path, '@loader_path/libhunspell-1.7.0.dylib', parent_lib_path)
-            print("Changed lib path '{}' to '@loader_path/libhunspell-1.7.0.dylib' in {}".format(build_lib_path, parent_lib_path))
-    else:
-        print("Skipping path rewrote due to SKIP_LIB_PATH_REWRITE being set")
+    # Needed for darwin generated SO files to correctly look in the @loader_path for shared dependencies
+    build_hunspell_lib_path = os.path.join(BASE_DIR, 'external', 'build', 'lib', 'libhunspell-1.7.0.dylib')
+    for lib_path in glob.glob(os.path.join(BASE_DIR, 'hunspell', '*.so')):
+        lib_name = os.path.basename(lib_path)
+        print("Current lib '{}' id:".format(lib_name))
+        run_proc_delay_print('otool', '-D', lib_path)
+        print("Current lib '{}' paths:".format(lib_name))
+        run_proc_delay_print('otool', '-L', lib_path)
+        run_proc_delay_print('install_name_tool', '-id', '@loader_path/{}'.format(lib_name), lib_path)
+        run_proc_delay_print('install_name_tool', '-change', build_hunspell_lib_path, '@loader_path/libhunspell-1.7.0.dylib', lib_path)
+        print("Changed lib '{}' id:".format(lib_name))
+        run_proc_delay_print('otool', '-D', lib_path)
+        print("Changed lib '{}' paths:".format(lib_name))
+        run_proc_delay_print('otool', '-L', lib_path)
+    for lib_path in glob.glob(os.path.join(BASE_DIR, 'hunspell', '*.dylib')):
+        lib_name = os.path.basename(lib_path)
+        print("Current lib '{}' id:".format(lib_name))
+        run_proc_delay_print('otool', '-D', lib_path)
+        print("Current lib '{}' paths:".format(lib_name))
+        run_proc_delay_print('otool', '-L', lib_path)
+        run_proc_delay_print('install_name_tool', '-id', '@loader_path/{}'.format(lib_name), parent_lib_path)
+        print("Changed lib '{}' id:".format(lib_name))
+        run_proc_delay_print('otool', '-D', lib_path)
+        print("Changed lib '{}' paths:".format(lib_name))
+        run_proc_delay_print('otool', '-L', lib_path)
