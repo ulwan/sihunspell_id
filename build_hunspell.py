@@ -115,6 +115,15 @@ def pkgconfig(**kw):
 
     return kw
 
+def get_build_dir():
+    build_base_long = [arg[12:].strip("= ") for arg in sys.argv if arg.startswith("--build-base")]
+    build_base_short = [arg[2:].strip(" ") for arg in sys.argv if arg.startswith("-b")]
+    build_base_arg = build_base_long or build_base_short
+    if build_base_arg:
+        return build_base_arg[0]
+    else:
+        return "."
+
 def repair_darwin_link_dep_path():
     # Needed for darwin generated SO files to correctly look in the @loader_path for shared dependencies
     build_hunspell_lib_path = os.path.join(BASE_DIR, 'external', 'build', 'lib', 'libhunspell-1.7.0.dylib')
@@ -142,7 +151,7 @@ def repair_darwin_link_dep_path():
         print("Changed lib '{}' paths:".format(lib_name))
         run_proc_delay_print('otool', '-L', lib_path)
 
-    for lib_path in glob.glob(os.path.join(BASE_DIR, 'build', '*.so')):
+    for lib_path in glob.glob(os.path.join(get_build_dir(), '*.so')):
         lib_name = os.path.basename(lib_path)
         print("Build Current lib '{}' id:".format(lib_name))
         run_proc_delay_print('otool', '-D', lib_path)
@@ -154,7 +163,7 @@ def repair_darwin_link_dep_path():
         run_proc_delay_print('otool', '-D', lib_path)
         print("Build Changed lib '{}' paths:".format(lib_name))
         run_proc_delay_print('otool', '-L', lib_path)
-    for lib_path in glob.glob(os.path.join(BASE_DIR, 'build', '*.dylib')):
+    for lib_path in glob.glob(os.path.join(get_build_dir(), '*.dylib')):
         lib_name = os.path.basename(lib_path)
         print("Build Current lib '{}' id:".format(lib_name))
         run_proc_delay_print('otool', '-D', lib_path)
