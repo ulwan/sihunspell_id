@@ -136,7 +136,7 @@ def repair_darwin_link_dep_path():
         run_proc_delay_print('otool', '-D', lib_path)
         print("Current lib '{}' paths:".format(lib_name))
         run_proc_delay_print('otool', '-L', lib_path)
-        run_proc_delay_print('install_name_tool', '-id', '@loader_path/{}'.format(lib_name), parent_lib_path)
+        run_proc_delay_print('install_name_tool', '-id', '@loader_path/{}'.format(lib_name), lib_path)
         print("Changed lib '{}' id:".format(lib_name))
         run_proc_delay_print('otool', '-D', lib_path)
         print("Changed lib '{}' paths:".format(lib_name))
