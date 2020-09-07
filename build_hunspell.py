@@ -16,6 +16,13 @@ from subprocess import getstatusoutput
 
 BASE_DIR = os.path.abspath(os.path.dirname(__file__))
 
+def managed_builder_mode():
+    if platform.system() == 'Darwin':
+        managed = os.environ.get('OSX_MANAGED_BUILD_WHEEL', os.environ.get('MANAGED_BUILD_WHEEL'))
+    else:
+        managed = os.environ.get('MANAGED_BUILD_WHEEL')
+    return managed is not None and managed != '0' and managed.lower() != 'false')
+
 def include_dirs():
     return [
         os.path.abspath(os.path.join(BASE_DIR, 'hunspell')),
@@ -69,12 +76,14 @@ def build_hunspell_package(directory, force_build=False):
         for filename in os.listdir(lib_path):
             if os.path.isfile(os.path.join(lib_path, filename)):
                 print('\t' + filename)
-        # Copy to our runtime location
-        os.makedirs(hunspell_so_dir, exist_ok=True)
-        shutil.copyfile(build_lib_path, hunspell_so_path)
-        print("Copied binary to '{}'".format(hunspell_so_path))
-
-    return export_lib_name, hunspell_so_dir
+        if not managed_builder_mode():
+            # Copy to our runtime location
+            os.makedirs(hunspell_so_dir, exist_ok=True)
+            shutil.copyfile(build_lib_path, hunspell_so_path)
+            print("Copied binary to '{}'".format(hunspell_so_path))
+            return export_lib_name, hunspell_so_dir
+        else:
+            return export_lib_name, build_lib_path
 
 def pkgconfig(**kw):
     kw['include_dirs'] = include_dirs()
@@ -160,7 +169,3 @@ def repair_darwin_link_dep_path():
         run_proc_delay_print('otool', '-D', lib_path)
         print("Changed lib '{}' paths:".format(lib_name))
         run_proc_delay_print('otool', '-L', lib_path)
-
-        # Hack to make the search path cibuildwheel is looking in valid :/
-        shutil.copyfile(lib_path, build_hunspell_lib_path)
-        print("Copied binary back to original lib path (to make cibuildwheel happy) '{}' -> '{}'".format(lib_path, build_hunspell_lib_path))

@@ -6,7 +6,7 @@ import platform
 from warnings import warn
 from setuptools import setup, find_packages, Extension
 from distutils.command.build import build
-from build_hunspell import pkgconfig, repair_darwin_link_dep_path
+from build_hunspell import pkgconfig, repair_darwin_link_dep_path, managed_builder_mode
 from collections import defaultdict
 
 BASE_DIR = os.path.abspath(os.path.dirname(__file__))
@@ -86,7 +86,7 @@ class build_darwin_fix(build):
     def run(self):
         build.run(self)
         # OSX build a shared dependency with an absolute path to the hunspell dylib. This fixes that
-        if platform.system() == 'Darwin':
+        if not managed_builder_mode() and platform.system() == 'Darwin':
             repair_darwin_link_dep_path()
 
 def version():

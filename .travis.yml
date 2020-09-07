@@ -119,7 +119,7 @@ script:
 - rm hunspell/*.so || true
 - rm hunspell/*.dylib || true
 - rm hunspell/*.pyd || true
-- python -m cibuildwheel --output-dir wheelhouse
+- OSX_MANAGED_BUILD_WHEEL=1 python -m cibuildwheel --output-dir wheelhouse
 - ls wheelhouse
 # Print wheel contents
 - for i in wheelhouse/*.whl; do echo "Listing file inside $i"; python -m zipfile -l $i; done
