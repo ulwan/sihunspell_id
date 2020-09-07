@@ -21,7 +21,7 @@ def managed_builder_mode():
         managed = os.environ.get('OSX_MANAGED_BUILD_WHEEL', os.environ.get('MANAGED_BUILD_WHEEL'))
     else:
         managed = os.environ.get('MANAGED_BUILD_WHEEL')
-    return managed is not None and managed != '0' and managed.lower() != 'false')
+    return managed is not None and managed != '0' and managed.lower() != 'false'
 
 def include_dirs():
     return [
