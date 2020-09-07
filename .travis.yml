@@ -119,7 +119,11 @@ script:
 - rm hunspell/*.so || true
 - rm hunspell/*.dylib || true
 - rm hunspell/*.pyd || true
-- OSX_MANAGED_BUILD_WHEEL=1 python -m cibuildwheel --output-dir wheelhouse
+- if [ "${TRAVIS_OS_NAME}" == "osx" ]; then
+    python setup.py bdist_wheel -d TARGET wheelhouse
+  else
+    python -m cibuildwheel --output-dir wheelhouse
+  fi
 - ls wheelhouse
 # Print wheel contents
 - for i in wheelhouse/*.whl; do echo "Listing file inside $i"; python -m zipfile -l $i; done
