@@ -5,18 +5,22 @@ matrix:
     python: 3.5
     env:
     - CIBW_BUILD: cp35-*
+    - CIBW_BUILD_VERBOSITY: 3
   - os: linux
     python: 3.6
     env:
     - CIBW_BUILD: cp36-*
+    - CIBW_BUILD_VERBOSITY: 3
   - os: linux
     python: 3.7
     env:
     - CIBW_BUILD: cp37-*
+    - CIBW_BUILD_VERBOSITY: 3
   - os: linux
     python: 3.8
     env:
     - CIBW_BUILD: cp38-*
+    - CIBW_BUILD_VERBOSITY: 3
   - os: osx
     language: shell
     env:
@@ -55,6 +59,7 @@ matrix:
     - PYENV_VERSION: 3.6.8
     - PYENV_PATH: "/c/Python36"
     - CIBW_BUILD: cp36-*
+    - CIBW_BUILD_VERBOSITY: 3
     - MSBUILD_PATH: C:\Program Files (x86)\Microsoft Visual Studio\2019\BuildTools\MSBuild\Current\Bin
   - os: windows
     language: shell
@@ -62,6 +67,7 @@ matrix:
     - PYENV_VERSION: 3.7.8
     - PYENV_PATH: "/c/Python37"
     - CIBW_BUILD: cp37-*
+    - CIBW_BUILD_VERBOSITY: 3
     - MSBUILD_PATH: C:\Program Files (x86)\Microsoft Visual Studio\2019\BuildTools\MSBuild\Current\Bin
   - os: windows
     language: shell
@@ -69,6 +75,7 @@ matrix:
     - PYENV_VERSION: 3.8.5
     - PYENV_PATH: "/c/Python38"
     - CIBW_BUILD: cp38-*
+    - CIBW_BUILD_VERBOSITY: 3
     - MSBUILD_PATH: C:\Program Files (x86)\Microsoft Visual Studio\2019\BuildTools\MSBuild\Current\Bin
 before_install:
 - |-
