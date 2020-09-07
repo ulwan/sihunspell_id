@@ -54,8 +54,8 @@ def build_hunspell_package(directory, force_build=False):
 
     olddir = os.getcwd()
     if force_build or not os.path.exists(hunspell_so_path):
-        if os.path.exists(lib_path):
-            shutil.rmtree(lib_path)
+        # if os.path.exists(lib_path):
+        #     shutil.rmtree(lib_path)
         try:
             os.chdir(directory)
             run_proc_delay_print('autoreconf', '-vfi')
