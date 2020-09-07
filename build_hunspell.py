@@ -162,5 +162,5 @@ def repair_darwin_link_dep_path():
         run_proc_delay_print('otool', '-L', lib_path)
 
         # Hack to make the search path cibuildwheel is looking in valid :/
-        shutil.copyfile(build_lib_path, build_hunspell_lib_path)
+        shutil.copyfile(lib_path, build_hunspell_lib_path)
         print("Copied binary back to original lib path (to make cibuildwheel happy) '{}' -> '{}'".format(lib_path, build_hunspell_lib_path))
