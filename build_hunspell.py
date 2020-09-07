@@ -81,9 +81,9 @@ def build_hunspell_package(directory, force_build=False):
             os.makedirs(hunspell_so_dir, exist_ok=True)
             shutil.copyfile(build_lib_path, hunspell_so_path)
             print("Copied binary to '{}'".format(hunspell_so_path))
-            return export_lib_name, hunspell_so_dir
         else:
-            return export_lib_name, build_lib_path
+            hunspell_so_dir = build_lib_path
+    return export_lib_name, hunspell_so_dir
 
 def pkgconfig(**kw):
     kw['include_dirs'] = include_dirs()
