@@ -126,7 +126,10 @@ def get_build_dir():
 def repair_darwin_link_dep_path():
     # Needed for darwin generated SO files to correctly look in the @loader_path for shared dependencies
     build_hunspell_lib_path = os.path.join(BASE_DIR, 'external', 'build', 'lib', 'libhunspell-1.7.0.dylib')
-    for lib_path in list(glob.glob(os.path.join(BASE_DIR, 'hunspell', '*.so'))) + list(glob.glob(os.path.join(get_build_dir(), '*.so'))):
+    for lib_path in (
+            list(glob.glob(os.path.join(BASE_DIR, 'hunspell', '**', '*.so'), recursive=True)) +
+            list(glob.glob(os.path.join(get_build_dir(), '**', '*.so'), recursive=True)
+        )):
         print("Found *.so lib to modify: {}".format(lib_path))
 
         lib_name = os.path.basename(lib_path)
@@ -143,7 +146,10 @@ def repair_darwin_link_dep_path():
         print("Changed lib '{}' paths:".format(lib_name))
         run_proc_delay_print('otool', '-L', lib_path)
 
-    for lib_path in list(glob.glob(os.path.join(BASE_DIR, 'hunspell', '*.dylib'))) + list(glob.glob(os.path.join(get_build_dir(), '*.dylib'))):
+    for lib_path in (
+            list(glob.glob(os.path.join(BASE_DIR, 'hunspell', '**', '*.dylib'), recursive=True)) +
+            list(glob.glob(os.path.join(get_build_dir(), '**', '*.dylib'), recursive=True))
+        ):
         print("Found *.dylib dependency lib to modify: {}".format(lib_path))
 
         lib_name = os.path.basename(lib_path)

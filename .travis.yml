@@ -27,7 +27,6 @@ matrix:
     - PYENV_VERSION: 3.5-dev
     - CIBW_BUILD: cp35-*
     - CIBW_BUILD_VERBOSITY: 3
-    - MACOSX_DEPLOYMENT_TARGET: 10.9
     - HOMEBREW_NO_INSTALL_CLEANUP: 1
     - HOMEBREW_NO_AUTO_UPDATE: 1
   - os: osx
@@ -36,7 +35,6 @@ matrix:
     - PYENV_VERSION: 3.6-dev
     - CIBW_BUILD: cp36-*
     - CIBW_BUILD_VERBOSITY: 3
-    - MACOSX_DEPLOYMENT_TARGET: 10.9
     - HOMEBREW_NO_INSTALL_CLEANUP: 1
     - HOMEBREW_NO_AUTO_UPDATE: 1
   - os: osx
@@ -45,7 +43,6 @@ matrix:
     - PYENV_VERSION: 3.7-dev
     - CIBW_BUILD: cp37-*
     - CIBW_BUILD_VERBOSITY: 3
-    - MACOSX_DEPLOYMENT_TARGET: 10.9
     - HOMEBREW_NO_INSTALL_CLEANUP: 1
     - HOMEBREW_NO_AUTO_UPDATE: 1
   - os: osx
@@ -54,7 +51,6 @@ matrix:
     - PYENV_VERSION: 3.8-dev
     - CIBW_BUILD: cp38-*
     - CIBW_BUILD_VERBOSITY: 3
-    - MACOSX_DEPLOYMENT_TARGET: 10.9
     - HOMEBREW_NO_INSTALL_CLEANUP: 1
     - HOMEBREW_NO_AUTO_UPDATE: 1
   - os: windows
@@ -123,12 +119,7 @@ script:
 - rm hunspell/*.so || true
 - rm hunspell/*.dylib || true
 - rm hunspell/*.pyd || true
-- |-
-  if [ "${TRAVIS_OS_NAME}" == "osx" ]; then
-    python setup.py bdist_wheel -d wheelhouse
-  else
-    python -m cibuildwheel --output-dir wheelhouse
-  fi
+- python -m cibuildwheel --output-dir wheelhouse
 - ls wheelhouse
 # Print wheel contents
 - for i in wheelhouse/*.whl; do echo "Listing file inside $i"; python -m zipfile -l $i; done
