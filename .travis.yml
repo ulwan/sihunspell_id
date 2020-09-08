@@ -5,23 +5,29 @@ matrix:
     python: 3.5
     env:
     - CIBW_BUILD: cp35-*
+    - CIBW_BUILD_VERBOSITY: 3
   - os: linux
     python: 3.6
     env:
     - CIBW_BUILD: cp36-*
+    - CIBW_BUILD_VERBOSITY: 3
   - os: linux
     python: 3.7
     env:
     - CIBW_BUILD: cp37-*
+    - CIBW_BUILD_VERBOSITY: 3
   - os: linux
     python: 3.8
     env:
     - CIBW_BUILD: cp38-*
+    - CIBW_BUILD_VERBOSITY: 3
   - os: osx
     language: shell
     env:
     - PYENV_VERSION: 3.5-dev
     - CIBW_BUILD: cp35-*
+    - CIBW_BUILD_VERBOSITY: 3
+    - MACOSX_DEPLOYMENT_TARGET: 10.9
     - HOMEBREW_NO_INSTALL_CLEANUP: 1
     - HOMEBREW_NO_AUTO_UPDATE: 1
   - os: osx
@@ -29,6 +35,8 @@ matrix:
     env:
     - PYENV_VERSION: 3.6-dev
     - CIBW_BUILD: cp36-*
+    - CIBW_BUILD_VERBOSITY: 3
+    - MACOSX_DEPLOYMENT_TARGET: 10.9
     - HOMEBREW_NO_INSTALL_CLEANUP: 1
     - HOMEBREW_NO_AUTO_UPDATE: 1
   - os: osx
@@ -36,6 +44,8 @@ matrix:
     env:
     - PYENV_VERSION: 3.7-dev
     - CIBW_BUILD: cp37-*
+    - CIBW_BUILD_VERBOSITY: 3
+    - MACOSX_DEPLOYMENT_TARGET: 10.9
     - HOMEBREW_NO_INSTALL_CLEANUP: 1
     - HOMEBREW_NO_AUTO_UPDATE: 1
   - os: osx
@@ -43,6 +53,8 @@ matrix:
     env:
     - PYENV_VERSION: 3.8-dev
     - CIBW_BUILD: cp38-*
+    - CIBW_BUILD_VERBOSITY: 3
+    - MACOSX_DEPLOYMENT_TARGET: 10.9
     - HOMEBREW_NO_INSTALL_CLEANUP: 1
     - HOMEBREW_NO_AUTO_UPDATE: 1
   - os: windows
@@ -51,6 +63,7 @@ matrix:
     - PYENV_VERSION: 3.6.8
     - PYENV_PATH: "/c/Python36"
     - CIBW_BUILD: cp36-*
+    - CIBW_BUILD_VERBOSITY: 3
     - MSBUILD_PATH: C:\Program Files (x86)\Microsoft Visual Studio\2019\BuildTools\MSBuild\Current\Bin
   - os: windows
     language: shell
@@ -58,6 +71,7 @@ matrix:
     - PYENV_VERSION: 3.7.8
     - PYENV_PATH: "/c/Python37"
     - CIBW_BUILD: cp37-*
+    - CIBW_BUILD_VERBOSITY: 3
     - MSBUILD_PATH: C:\Program Files (x86)\Microsoft Visual Studio\2019\BuildTools\MSBuild\Current\Bin
   - os: windows
     language: shell
@@ -65,6 +79,7 @@ matrix:
     - PYENV_VERSION: 3.8.5
     - PYENV_PATH: "/c/Python38"
     - CIBW_BUILD: cp38-*
+    - CIBW_BUILD_VERBOSITY: 3
     - MSBUILD_PATH: C:\Program Files (x86)\Microsoft Visual Studio\2019\BuildTools\MSBuild\Current\Bin
 before_install:
 - |-
@@ -108,8 +123,15 @@ script:
 - rm hunspell/*.so || true
 - rm hunspell/*.dylib || true
 - rm hunspell/*.pyd || true
-- python -m cibuildwheel --output-dir wheelhouse
+- |-
+  if [ "${TRAVIS_OS_NAME}" == "osx" ]; then
+    python setup.py bdist_wheel -d wheelhouse
+  else
+    python -m cibuildwheel --output-dir wheelhouse
+  fi
 - ls wheelhouse
+# Print wheel contents
+- for i in wheelhouse/*.whl; do echo "Listing file inside $i"; python -m zipfile -l $i; done
 - if [ "${TRAVIS_TAG:-}" != "" ]; then python -m twine upload --skip-existing wheelhouse/*;
   fi
 notifications:
@@ -123,3 +145,4 @@ env:
   - TWINE_USERNAME: __token__
   - CYHUNSPELL_FORCE_BUILD: 1
   - CIBW_ENVIRONMENT: CYHUNSPELL_FORCE_BUILD=1
+  - CIBW_DEPENDENCY_VERSIONS: latest

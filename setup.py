@@ -6,8 +6,21 @@ import platform
 from warnings import warn
 from setuptools import setup, find_packages, Extension
 from distutils.command.build import build
-from build_hunspell import pkgconfig, repair_darwin_link_dep_path, clean_hunspell_build_dir
+from build_hunspell import pkgconfig, repair_darwin_link_dep_path
 from collections import defaultdict
+
+try:
+    from wheel.bdist_wheel import bdist_wheel as _bdist_wheel
+
+    class bdist_wheel(_bdist_wheel):
+        def finalize_options(self):
+            _bdist_wheel.finalize_options(self)
+            # Mark us as not a pure python package
+            self.root_is_pure = False
+except ImportError:
+    print("Could not register bdist_wheel. Make sure the wheel package is installed!")
+    bdist_wheel = None
+
 
 BASE_DIR = os.path.abspath(os.path.dirname(__file__))
 BUILD_ARGS = defaultdict(lambda: ['-O3', '-g0'])
@@ -82,20 +95,12 @@ class build_ext_compiler_check(build_ext):
         cleanup_pycs()
         build_ext.run(self)
 
-def clean_build_dir():
-    build_path = os.path.join(BASE_DIR, 'build')
-    if os.path.exists(build_path):
-        shutil.rmtree(build_path)
-
 class build_darwin_fix(build):
     def run(self):
         build.run(self)
         # OSX build a shared dependency with an absolute path to the hunspell dylib. This fixes that
         if platform.system() == 'Darwin':
             repair_darwin_link_dep_path()
-            # cibuildwheel tries to manipulate the libraries in the build directory, so clean them up
-            clean_hunspell_build_dir()
-            clean_build_dir()
 
 def version():
     with open(os.path.join(BASE_DIR, 'hunspell', '_version.py'), 'r') as ver:
@@ -114,7 +119,7 @@ setup(
     long_description_content_type='text/markdown',
     ext_modules=ext_modules,
     install_requires=required,
-    cmdclass={ 'build_ext': build_ext_compiler_check, 'build': build_darwin_fix },
+    cmdclass={ 'build_ext': build_ext_compiler_check, 'build': build_darwin_fix, 'bdist_wheel': bdist_wheel },
     extras_require={
         'dev': required_dev,
         'test': required_test,

@@ -1,2 +1,3 @@
 cython==0.29.21
+wheel
 twine

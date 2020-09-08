@@ -12,10 +12,7 @@ import shutil
 from subprocess import Popen, PIPE
 from tar_download import download_and_extract
 from distutils.sysconfig import get_python_lib
-try:
-    from subprocess import getstatusoutput
-except ImportError:
-    from commands import getstatusoutput
+from subprocess import getstatusoutput
 
 BASE_DIR = os.path.abspath(os.path.dirname(__file__))
 
@@ -76,7 +73,6 @@ def build_hunspell_package(directory, force_build=False):
         os.makedirs(hunspell_so_dir, exist_ok=True)
         shutil.copyfile(build_lib_path, hunspell_so_path)
         print("Copied binary to '{}'".format(hunspell_so_path))
-
     return export_lib_name, hunspell_so_dir
 
 def pkgconfig(**kw):
@@ -118,14 +114,48 @@ def pkgconfig(**kw):
 
     return kw
 
-def clean_hunspell_build_dir():
-    build_path = os.path.join(BASE_DIR, 'external', 'build')
-    if os.path.exists(build_path):
-        shutil.rmtree(build_path)
+def get_build_dir():
+    build_base_long = [arg[12:].strip("= ") for arg in sys.argv if arg.startswith("--build-base")]
+    build_base_short = [arg[2:].strip(" ") for arg in sys.argv if arg.startswith("-b")]
+    build_base_arg = build_base_long or build_base_short
+    if build_base_arg:
+        return build_base_arg[0]
+    else:
+        return "."
 
 def repair_darwin_link_dep_path():
     # Needed for darwin generated SO files to correctly look in the @loader_path for shared dependencies
-    build_lib_path = os.path.join(BASE_DIR, 'external', 'build', 'lib', 'libhunspell-1.7.0.dylib')
-    for parent_lib_path in glob.glob(os.path.join(BASE_DIR, 'hunspell', '*.so')):
-        run_proc_delay_print('install_name_tool', '-change', build_lib_path, '@loader_path/libhunspell-1.7.0.dylib', parent_lib_path)
-        print("Changed lib path '{}' to '@loader_path/libhunspell-1.7.0.dylib' in {}".format(build_lib_path, parent_lib_path))
+    build_hunspell_lib_path = os.path.join(BASE_DIR, 'external', 'build', 'lib', 'libhunspell-1.7.0.dylib')
+    for lib_path in list(glob.glob(os.path.join(BASE_DIR, 'hunspell', '*.so'))) + list(glob.glob(os.path.join(get_build_dir(), '*.so'))):
+        print("Found *.so lib to modify: {}".format(lib_path))
+
+        lib_name = os.path.basename(lib_path)
+        print("Current lib '{}' id:".format(lib_name))
+        run_proc_delay_print('otool', '-D', lib_path)
+        print("Current lib '{}' paths:".format(lib_name))
+        run_proc_delay_print('otool', '-L', lib_path)
+
+        run_proc_delay_print('install_name_tool', '-id', '@loader_path/{}'.format(lib_name), lib_path)
+        run_proc_delay_print('install_name_tool', '-change', build_hunspell_lib_path, '@loader_path/libhunspell-1.7.0.dylib', lib_path)
+
+        print("Changed lib '{}' id:".format(lib_name))
+        run_proc_delay_print('otool', '-D', lib_path)
+        print("Changed lib '{}' paths:".format(lib_name))
+        run_proc_delay_print('otool', '-L', lib_path)
+
+    for lib_path in list(glob.glob(os.path.join(BASE_DIR, 'hunspell', '*.dylib'))) + list(glob.glob(os.path.join(get_build_dir(), '*.dylib'))):
+        print("Found *.dylib dependency lib to modify: {}".format(lib_path))
+
+        lib_name = os.path.basename(lib_path)
+        print("Current lib '{}' id:".format(lib_name))
+        run_proc_delay_print('otool', '-D', lib_path)
+        print("Current lib '{}' paths:".format(lib_name))
+        run_proc_delay_print('otool', '-L', lib_path)
+
+        run_proc_delay_print('install_name_tool', '-id', '@loader_path/{}'.format(lib_name), lib_path)
+        run_proc_delay_print('install_name_tool', '-change', build_hunspell_lib_path, '@loader_path/libhunspell-1.7.0.dylib', lib_path)
+
+        print("Changed lib '{}' id:".format(lib_name))
+        run_proc_delay_print('otool', '-D', lib_path)
+        print("Changed lib '{}' paths:".format(lib_name))
+        run_proc_delay_print('otool', '-L', lib_path)
