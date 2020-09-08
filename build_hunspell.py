@@ -9,6 +9,7 @@ import platform
 import re
 import sys
 import shutil
+from pathlib import Path
 from subprocess import Popen, PIPE
 from tar_download import download_and_extract
 from distutils.sysconfig import get_python_lib
