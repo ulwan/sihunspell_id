@@ -121,7 +121,7 @@ script:
 - rm hunspell/*.pyd || true
 - |-
   if [ "${TRAVIS_OS_NAME}" == "osx" ]; then
-    python setup.py bdist_wheel -d TARGET wheelhouse
+    python setup.py bdist_wheel -d wheelhouse
   else
     python -m cibuildwheel --output-dir wheelhouse
   fi
